@@ -38,11 +38,12 @@ namespace Winforms
             pgProcesamiento.Visible = true;
             var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
 
-            var tarjetas = await ObtenerTarjetasDeCredito(20);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
             try
             {
+                var tarjetas = await ObtenerTarjetasDeCredito(20, cancellationTokenSource.Token);
                 await ProcesarTarjetas(tarjetas, reportarProgreso, cancellationTokenSource.Token);
             }
             catch (HttpRequestException ex)
@@ -144,17 +145,31 @@ namespace Winforms
 
         }
 
-        private async Task<List<string>> ObtenerTarjetasDeCredito(int cantidadDeTarjetas)
+        private async Task<List<string>> ObtenerTarjetasDeCredito(int cantidadDeTarjetas, CancellationToken cancellationToken = default)
         {
-            return await Task.Run(() =>
+            return await Task.Run(async () =>
             {
 
                 var tarjetas = new List<string>();
                 for (int i = 0; i < cantidadDeTarjetas; i++)
                 {
+
+                    // simular procesamiento largo
+                    await Task.Delay(1000);
+
                     // 0000000000001
                     // 0000000000002
                     tarjetas.Add(i.ToString().PadLeft(16, '0'));
+
+
+                    Console.WriteLine($"Han sido generadas {tarjetas.Count} tarjetas");
+
+                    // variable que indica si se ha solicitado la cancelaccion del token
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        throw new TaskCanceledException();
+                    }
+
                 }
                 return tarjetas;
 

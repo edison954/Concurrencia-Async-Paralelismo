@@ -667,6 +667,9 @@ Cancelar tareas  CancellationToken
 
 
 
+-------------------------------------------------------------------------------
+Cancelando Bucles
+
 
 
 
