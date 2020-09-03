@@ -117,4 +117,10 @@ private static Random _local;
             // ..... 
             MessageBox.Show($"Operación finalizada en {stopwatch.ElapsedMilliseconds / 1000.0} segundos");
 
+No se procesan en orden:
 
+Tarjeta 0000000000000003 procesada
+Tarjeta 0000000000000002 procesada
+Tarjeta 0000000000000001 procesada
+Tarjeta 0000000000000000 procesada
+Tarjeta 0000000000000004 procesada

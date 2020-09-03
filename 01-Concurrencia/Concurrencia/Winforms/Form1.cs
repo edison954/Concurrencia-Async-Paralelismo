@@ -30,7 +30,7 @@ namespace Winforms
         private async void btnIniciar_Click(object sender, EventArgs e)
         {
             loadingGif.Visible = true;
-            var tarjetas = ObtenerTarjetasDeCredito(5);
+            var tarjetas = ObtenerTarjetasDeCredito(250000);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try
