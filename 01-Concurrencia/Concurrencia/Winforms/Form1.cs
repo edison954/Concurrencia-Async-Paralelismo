@@ -21,9 +21,15 @@ namespace Winforms
         private async void btnIniciar_Click(object sender, EventArgs e)
         {
             loadingGif.Visible = true;
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            await Esperar();
+            MessageBox.Show("pasaron los 5 segundos"); ;
             loadingGif.Visible = false;
             // ...
         }
+
+        private async Task Esperar() {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+
     }
 }
