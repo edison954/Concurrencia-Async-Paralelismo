@@ -53,6 +53,7 @@
             this.loadingGif.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.loadingGif.TabIndex = 1;
             this.loadingGif.TabStop = false;
+            this.loadingGif.Visible = false;
             // 
             // Form1
             // 

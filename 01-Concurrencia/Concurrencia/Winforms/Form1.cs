@@ -18,9 +18,12 @@ namespace Winforms
             InitializeComponent();
         }
 
-        private void btnIniciar_Click(object sender, EventArgs e)
+        private async void btnIniciar_Click(object sender, EventArgs e)
         {
-            Thread.Sleep(5000);
+            loadingGif.Visible = true;
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            loadingGif.Visible = false;
+            // ...
         }
     }
 }
