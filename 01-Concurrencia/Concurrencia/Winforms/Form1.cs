@@ -30,7 +30,7 @@ namespace Winforms
         private async void btnIniciar_Click(object sender, EventArgs e)
         {
             loadingGif.Visible = true;
-            var tarjetas = await ObtenerTarjetasDeCredito(25000);
+            var tarjetas = await ObtenerTarjetasDeCredito(15);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try
@@ -50,19 +50,27 @@ namespace Winforms
         private async Task ProcesarTarjetas(List<string> tarjetas)
         {
 
-            using var semaforo = new SemaphoreSlim(4000);
+            using var semaforo = new SemaphoreSlim(3);
 
-            var tareas = new List<Task>();
-
-            await Task.Run(() => {
-                foreach (var tarjeta in tarjetas)
+            var tareas = new List<Task<HttpResponseMessage>>();
+            tareas = tarjetas.Select(async tarjeta =>
+            {
+                var json = JsonConvert.SerializeObject(tarjeta);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                await semaforo.WaitAsync();
+                try
                 {
-                    var json = JsonConvert.SerializeObject(tarjeta);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var respuestaTask = httpClient.PostAsync($"{apiURL}/tarjetas", content);
-                    tareas.Add(respuestaTask);
+                    return await httpClient.PostAsync($"{apiURL}/tarjetas", content);
                 }
-            });
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally {
+                    semaforo.Release();
+                }
+
+            }).ToList();
 
             await Task.WhenAll(tareas);
         }

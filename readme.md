@@ -137,4 +137,37 @@ en el csproj poner
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
 
+ej: se procesan de 3 en tres
 
+
+        private async Task ProcesarTarjetas(List<string> tarjetas)
+        {
+
+            using var semaforo = new SemaphoreSlim(3);
+
+            var tareas = new List<Task<HttpResponseMessage>>();
+            tareas = tarjetas.Select(async tarjeta =>
+            {
+                var json = JsonConvert.SerializeObject(tarjeta);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                await semaforo.WaitAsync();
+                try
+                {
+                    return await httpClient.PostAsync($"{apiURL}/tarjetas", content);
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally {
+                    semaforo.Release();
+                }
+
+            }).ToList();
+
+            await Task.WhenAll(tareas);
+        }
+
+
+
+        
