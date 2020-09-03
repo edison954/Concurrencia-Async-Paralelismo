@@ -19,6 +19,7 @@ namespace Winforms
 
         private string apiURL;
         private HttpClient httpClient;
+        private CancellationTokenSource cancellationTokenSource;
 
         public Form1()
         {
@@ -29,6 +30,10 @@ namespace Winforms
 
         private async void btnIniciar_Click(object sender, EventArgs e)
         {
+
+            cancellationTokenSource = new CancellationTokenSource();
+
+
             loadingGif.Visible = true;
             pgProcesamiento.Visible = true;
             var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
@@ -38,16 +43,21 @@ namespace Winforms
             stopwatch.Start();
             try
             {
-                await ProcesarTarjetas(tarjetas, reportarProgreso);
+                await ProcesarTarjetas(tarjetas, reportarProgreso, cancellationTokenSource.Token);
             }
             catch (HttpRequestException ex)
             {
                 MessageBox.Show(ex.Message);
             }
+            catch (TaskCanceledException ex) 
+            {
+                MessageBox.Show("La operacion ha sido cancelada");
+            }
 
             MessageBox.Show($"Operación finalizada en {stopwatch.ElapsedMilliseconds / 1000.0} segundos");
             loadingGif.Visible = false;
             pgProcesamiento.Visible = false;
+            pgProcesamiento.Value = 0;
             // ...
         }
 
@@ -57,7 +67,7 @@ namespace Winforms
         }
 
 
-        private async Task ProcesarTarjetas(List<string> tarjetas, IProgress<int> progress = null)
+        private async Task ProcesarTarjetas(List<string> tarjetas, IProgress<int> progress = null, CancellationToken cancellationToken = default)
         {
 
             using var semaforo = new SemaphoreSlim(2);
@@ -73,7 +83,7 @@ namespace Winforms
                 await semaforo.WaitAsync();
                 try
                 {
-                    var tareaInterna = await httpClient.PostAsync($"{apiURL}/tarjetas", content);
+                    var tareaInterna = await httpClient.PostAsync($"{apiURL}/tarjetas", content, cancellationToken);
 
                     //if (progress != null)
                     //{
@@ -167,5 +177,9 @@ namespace Winforms
             }
         }
 
+        private void btnCancelar_Click(object sender, EventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+        }
     }
 }
