@@ -32,6 +32,7 @@ namespace Winforms
         {
 
             cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(30));
 
 
             loadingGif.Visible = true;

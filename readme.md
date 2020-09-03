@@ -672,6 +672,186 @@ Cancelando Bucles
 
 
 
+        private async void btnIniciar_Click(object sender, EventArgs e)
+        {
+
+            cancellationTokenSource = new CancellationTokenSource();
+
+
+            loadingGif.Visible = true;
+            pgProcesamiento.Visible = true;
+            var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            try
+            {
+                var tarjetas = await ObtenerTarjetasDeCredito(20, cancellationTokenSource.Token);
+                await ProcesarTarjetas(tarjetas, reportarProgreso, cancellationTokenSource.Token);
+            }
+            catch (HttpRequestException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            catch (TaskCanceledException ex) 
+            {
+                MessageBox.Show("La operacion ha sido cancelada");
+            }
+
+            MessageBox.Show($"Operación finalizada en {stopwatch.ElapsedMilliseconds / 1000.0} segundos");
+            loadingGif.Visible = false;
+            pgProcesamiento.Visible = false;
+            pgProcesamiento.Value = 0;
+            // ...
+        }
+
+        private void ReportarProgresoTarjetas(int porcentaje)
+        {
+            pgProcesamiento.Value = porcentaje;
+        }
+
+
+        private async Task ProcesarTarjetas(List<string> tarjetas, IProgress<int> progress = null, CancellationToken cancellationToken = default)
+        {
+
+            using var semaforo = new SemaphoreSlim(2);
+
+            var tareas = new List<Task<HttpResponseMessage>>();
+
+            var indice = 0;
+
+            tareas = tarjetas.Select(async tarjeta =>
+            {
+                var json = JsonConvert.SerializeObject(tarjeta);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                await semaforo.WaitAsync();
+                try
+                {
+                    var tareaInterna = await httpClient.PostAsync($"{apiURL}/tarjetas", content, cancellationToken);
+
+                    //if (progress != null)
+                    //{
+                    //    indice++;
+                    //    var porcentaje = (double)indice / tarjetas.Count;
+                    //    porcentaje = porcentaje * 100;
+                    //    var porcentajeInt = (int)Math.Round(porcentaje, 0);
+                    //    progress.Report(porcentajeInt);
+                    //}
+
+                    return tareaInterna;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally {
+                    semaforo.Release();
+                }
+
+            }).ToList();
+
+            var respuestasTareas = Task.WhenAll(tareas);
+
+            if(progress != null)
+            {
+                while (await Task.WhenAny(respuestasTareas, Task.Delay(1000)) != respuestasTareas) 
+                {
+                    // ejecutar esta pieza de codigo cada 1 segundo siempre y cuando el lsitado de tareas no se haya concluido
+                    var tareasCompletadas = tareas.Where(x => x.IsCompleted).Count();
+                    var porcentaje = (double)tareasCompletadas / tarjetas.Count;
+                    porcentaje = porcentaje * 100;
+                    var porcentajeInt = (int)Math.Round(porcentaje, 0);
+                    progress.Report(porcentajeInt);
+                }
+
+            }
+
+            // no importa que se haga await a la misma tarea, ya que si la tarea ya esta completada no la vuelve a ejecutar.
+            var respuestas = await respuestasTareas;
+
+
+            var tarjetasRechazadas = new List<string>();
+
+            foreach (var respuesta in respuestas)
+            {
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                var respuestaTarjeta = JsonConvert.DeserializeObject<RespuestaTarjeta>(contenido);
+                if (!respuestaTarjeta.Aprobada) {
+                    tarjetasRechazadas.Add(respuestaTarjeta.Tarjeta);
+                }
+            }
+
+            foreach (var tarjeta in tarjetasRechazadas)
+            {
+                Console.WriteLine(tarjeta);
+            }
+
+        }
+
+        private async Task<List<string>> ObtenerTarjetasDeCredito(int cantidadDeTarjetas, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(async () =>
+            {
+
+                var tarjetas = new List<string>();
+                for (int i = 0; i < cantidadDeTarjetas; i++)
+                {
+
+                    // simular procesamiento largo
+                    await Task.Delay(1000);
+
+                    // 0000000000001
+                    // 0000000000002
+                    tarjetas.Add(i.ToString().PadLeft(16, '0'));
+
+
+                    Console.WriteLine($"Han sido generadas {tarjetas.Count} tarjetas");
+
+                    // variable que indica si se ha solicitado la cancelaccion del token
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        throw new TaskCanceledException();
+                    }
+
+                }
+                return tarjetas;
+
+            });
+        }
+
+
+
+        private async Task Esperar() {
+            await Task.Delay(TimeSpan.FromSeconds(0));
+        }
+
+        private async Task<string> ObtenerSaludo(string nombre)
+        {
+            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/{nombre}"))
+            {
+                respuesta.EnsureSuccessStatusCode();
+                var saludo = await respuesta.Content.ReadAsStringAsync();
+                return saludo;
+            }
+        }
+
+        private void btnCancelar_Click(object sender, EventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+        }
+
+
+--------------------------------------------------------------------------
+Cancelando tareas por tiempo - timeout
+ej: cancelar la operacion si esta tardando mas de 3s
+
+cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(3));
+
+
+
+
+
 
 
 
