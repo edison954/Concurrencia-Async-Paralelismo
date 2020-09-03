@@ -924,4 +924,116 @@ ConfigureAwait(false)           --> para que despues del await se resuma la ejec
 
             btnCancelar.Text = "despues";
 
+-----------------------------------------------------------
+
+Patron de reintento (con tiempo de espera)
+
+primer intento: (no sofisticado)
+
+            var reintentos = 3;
+            var tiempoEspera = 500;
+
+            for (int i = 0; i < reintentos; i++)
+            {
+                try
+                {
+                    // operacion
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // loggear la excepcion
+                    await Task.Delay(tiempoEspera);                    
+                }
+            }
+
+
+metodo sofisticado  (patron de reintento)            
+
+
+        private async Task Reintentar(Func<Task> f, int reintentos = 3, int tiempoEspera = 500)
+        {
+            for (int i = 0; i < reintentos; i++)
+            {
+                try
+                {
+                    await f();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    await Task.Delay(tiempoEspera);
+                }
+            }
+        }
+
+
+            await Reintentar( async () => 
+            {
+                using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/edison")) 
+                {
+                    respuesta.EnsureSuccessStatusCode();
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    Console.WriteLine(contenido);
+                } 
+            });
+
+---> seria igual a: 
+
+        await Reintentar(ProcesarSaludo);
+
+        private async Task ProcesarSaludo() {
+
+            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/edison"))
+            {
+                respuesta.EnsureSuccessStatusCode();
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                Console.WriteLine(contenido);
+            }
+        }
+
+------> para atrapar la excepcion luego de los reintentos
+
+       // para retornar el resultado, incluso la excepcion.
+        private async Task<T> Reintentar<T>(Func<Task<T>> f, int reintentos = 3, int tiempoEspera = 500)
+        {
+            for (int i = 0; i < reintentos -1; i++)
+            {
+                try
+                {
+                    return await f();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    await Task.Delay(tiempoEspera);
+                }
+            }
+            return await f();
+        }
+
+           try
+            {
+                var contenido = await Reintentar(async () =>
+                {
+                    using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/edison"))
+                    {
+                        respuesta.EnsureSuccessStatusCode();
+                        return await respuesta.Content.ReadAsStringAsync();
+                    }
+                });
+
+                Console.WriteLine(contenido);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Excepcion atrapada");                
+            }
+
+
+
+
+
+
 

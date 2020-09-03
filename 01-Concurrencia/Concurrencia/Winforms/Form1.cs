@@ -38,12 +38,57 @@ namespace Winforms
 
             // await ObtenerSaludo2("Edison");
 
-            CheckForIllegalCrossThreadCalls = true;
 
-            btnCancelar.Text = "antes";
-            await Task.Delay(1000).ConfigureAwait(continueOnCapturedContext: false);
+            ////configureAwait
 
-            btnCancelar.Text = "despues";
+            //CheckForIllegalCrossThreadCalls = true;
+
+            //btnCancelar.Text = "antes";
+            //await Task.Delay(1000).ConfigureAwait(continueOnCapturedContext: false);
+
+            //btnCancelar.Text = "despues";
+
+
+            // Patron Reintento
+            var reintentos = 3;
+            var tiempoEspera = 500;
+
+            //for (int i = 0; i < reintentos; i++)
+            //{
+            //    try
+            //    {
+            //        // operacion
+            //        break;
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        // loggear la excepcion
+            //        await Task.Delay(tiempoEspera);                    
+            //    }
+            //}
+
+            //await Reintentar(ProcesarSaludo);
+
+            try
+            {
+                var contenido = await Reintentar(async () =>
+                {
+                    using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/edison"))
+                    {
+                        respuesta.EnsureSuccessStatusCode();
+                        return await respuesta.Content.ReadAsStringAsync();
+                    }
+                });
+
+                Console.WriteLine(contenido);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Excepcion atrapada");                
+            }
+
+
+
 
 
 
@@ -80,6 +125,53 @@ namespace Winforms
             pgProcesamiento.Value = 0;
             // ...
         }
+
+        private async Task ProcesarSaludo() {
+
+            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/edison"))
+            {
+                respuesta.EnsureSuccessStatusCode();
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                Console.WriteLine(contenido);
+            }
+        }
+
+        private async Task Reintentar(Func<Task> f, int reintentos = 3, int tiempoEspera = 500)
+        {
+            for (int i = 0; i < reintentos; i++)
+            {
+                try
+                {
+                    await f();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    await Task.Delay(tiempoEspera);
+                }
+            }
+        }
+
+        // para retornar el resultado, incluso la excepcion.
+        private async Task<T> Reintentar<T>(Func<Task<T>> f, int reintentos = 3, int tiempoEspera = 500)
+        {
+            for (int i = 0; i < reintentos -1; i++)
+            {
+                try
+                {
+                    return await f();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    await Task.Delay(tiempoEspera);
+                }
+            }
+            return await f();
+        }
+
+
 
         private void ReportarProgresoTarjetas(int porcentaje)
         {
