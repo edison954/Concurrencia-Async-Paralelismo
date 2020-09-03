@@ -31,6 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.btnIniciar = new System.Windows.Forms.Button();
             this.loadingGif = new System.Windows.Forms.PictureBox();
+            this.txtInput = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.loadingGif)).BeginInit();
             this.SuspendLayout();
             // 
@@ -55,17 +57,36 @@
             this.loadingGif.TabStop = false;
             this.loadingGif.Visible = false;
             // 
+            // txtInput
+            // 
+            this.txtInput.Location = new System.Drawing.Point(235, 38);
+            this.txtInput.Name = "txtInput";
+            this.txtInput.Size = new System.Drawing.Size(157, 20);
+            this.txtInput.TabIndex = 2;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(177, 41);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(42, 13);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "nombre";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.txtInput);
             this.Controls.Add(this.loadingGif);
             this.Controls.Add(this.btnIniciar);
             this.Name = "Form1";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.loadingGif)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -73,6 +94,8 @@
 
         private System.Windows.Forms.Button btnIniciar;
         private System.Windows.Forms.PictureBox loadingGif;
+        private System.Windows.Forms.TextBox txtInput;
+        private System.Windows.Forms.Label label1;
     }
 }
 
