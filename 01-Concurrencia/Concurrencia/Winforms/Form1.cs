@@ -75,14 +75,14 @@ namespace Winforms
                 {
                     var tareaInterna = await httpClient.PostAsync($"{apiURL}/tarjetas", content);
 
-                    if (progress != null)
-                    {
-                        indice++;
-                        var porcentaje = (double)indice / tarjetas.Count;
-                        porcentaje = porcentaje * 100;
-                        var porcentajeInt = (int)Math.Round(porcentaje, 0);
-                        progress.Report(porcentajeInt);
-                    }
+                    //if (progress != null)
+                    //{
+                    //    indice++;
+                    //    var porcentaje = (double)indice / tarjetas.Count;
+                    //    porcentaje = porcentaje * 100;
+                    //    var porcentajeInt = (int)Math.Round(porcentaje, 0);
+                    //    progress.Report(porcentajeInt);
+                    //}
 
                     return tareaInterna;
                 }
@@ -96,7 +96,25 @@ namespace Winforms
 
             }).ToList();
 
-            var respuestas = await Task.WhenAll(tareas);
+            var respuestasTareas = Task.WhenAll(tareas);
+
+            if(progress != null)
+            {
+                while (await Task.WhenAny(respuestasTareas, Task.Delay(1000)) != respuestasTareas) 
+                {
+                    // ejecutar esta pieza de codigo cada 1 segundo siempre y cuando el lsitado de tareas no se haya concluido
+                    var tareasCompletadas = tareas.Where(x => x.IsCompleted).Count();
+                    var porcentaje = (double)tareasCompletadas / tarjetas.Count;
+                    porcentaje = porcentaje * 100;
+                    var porcentajeInt = (int)Math.Round(porcentaje, 0);
+                    progress.Report(porcentajeInt);
+                }
+
+            }
+
+            // no importa que se haga await a la misma tarea, ya que si la tarea ya esta completada no la vuelve a ejecutar.
+            var respuestas = await respuestasTareas;
+
 
             var tarjetasRechazadas = new List<string>();
 
