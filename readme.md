@@ -904,6 +904,24 @@ en netcore no se tiene el contexto de sincronizacion por lo cual son hilos difer
             return $"Hola, {nombre}!";
         }
 
+--------------------------------------------------------
 
+ConfigureAwait(false)           --> para que despues del await se resuma la ejecucion en otro hilo
+                Se usa cuando no se necesita el hilo original despues de ejecutar un await  
+                (ejemplo libreira con hilo asincrono, por performance ya que toma mas tiempo sincronizar el hilo.)
+
+            btnCancelar.Text = "antes";
+            await Task.Delay(1000);
+
+            btnCancelar.Text = "despues";
+
+////
+
+            CheckForIllegalCrossThreadCalls = true;                             --> check para verificar si se hacen llamadas ilegales entre hilos
+
+            btnCancelar.Text = "antes";
+            await Task.Delay(1000).ConfigureAwait(continueOnCapturedContext: false);
+
+            btnCancelar.Text = "despues";
 
 

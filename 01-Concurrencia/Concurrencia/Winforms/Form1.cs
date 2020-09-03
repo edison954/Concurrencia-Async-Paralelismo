@@ -32,11 +32,20 @@ namespace Winforms
         {
 
             // contexto de sincronizacion
-            Console.WriteLine($"hilo antes del await: {Thread.CurrentThread.ManagedThreadId}");
-            await Task.Delay(500);
-            Console.WriteLine($"hilo despues del await: {Thread.CurrentThread.ManagedThreadId}");
+            //Console.WriteLine($"hilo antes del await: {Thread.CurrentThread.ManagedThreadId}");
+            //await Task.Delay(500);
+            //Console.WriteLine($"hilo despues del await: {Thread.CurrentThread.ManagedThreadId}");
 
-            await ObtenerSaludo2("Edison");
+            // await ObtenerSaludo2("Edison");
+
+            CheckForIllegalCrossThreadCalls = true;
+
+            btnCancelar.Text = "antes";
+            await Task.Delay(1000).ConfigureAwait(continueOnCapturedContext: false);
+
+            btnCancelar.Text = "despues";
+
+
 
             return;
 
