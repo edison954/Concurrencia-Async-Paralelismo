@@ -102,36 +102,19 @@ La excepcion de un Task unicamente se arroja cuando se hace el await,. sino qued
 
 
 
+[ThreadStatic]  -- > permite tener una copia por hilo de una variable (unico para cada hilo)
 
+[ThreadStatic]
+private static Random _local;
 
+// Crear stopwatch para revisar tiempo de ejecucion
 
+            loadingGif.Visible = true;
+            var tarjetas = ObtenerTarjetasDeCredito(5);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            // ..... 
+            MessageBox.Show($"Operación finalizada en {stopwatch.ElapsedMilliseconds / 1000.0} segundos");
 
 
