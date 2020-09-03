@@ -31,6 +31,15 @@ namespace Winforms
         private async void btnIniciar_Click(object sender, EventArgs e)
         {
 
+            // contexto de sincronizacion
+            Console.WriteLine($"hilo antes del await: {Thread.CurrentThread.ManagedThreadId}");
+            await Task.Delay(500);
+            Console.WriteLine($"hilo despues del await: {Thread.CurrentThread.ManagedThreadId}");
+
+            await ObtenerSaludo2("Edison");
+
+            return;
+
             cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(30));
 
@@ -216,13 +225,25 @@ namespace Winforms
 
         private async Task<string> ObtenerSaludo(string nombre)
         {
-            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/{nombre}"))
+            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos/{nombre}"))
             {
                 respuesta.EnsureSuccessStatusCode();
                 var saludo = await respuesta.Content.ReadAsStringAsync();
                 return saludo;
             }
         }
+
+        private async Task<string> ObtenerSaludo2(string nombre)
+        {
+            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos/delay/{nombre}"))
+            {
+                var saludo = await respuesta.Content.ReadAsStringAsync();
+                return saludo;
+            }
+        }
+
+
+
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {

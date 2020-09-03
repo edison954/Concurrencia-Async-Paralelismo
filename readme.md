@@ -878,8 +878,31 @@ Creando tareas ya terminadas  Task.FromResult           ---> por lo general para
         }
 
 
+---------------------------------------------------------------------
+
+Contexto de sincronizacion   (no todos los hilos son iguales)
+
+(en ocaciones se necesita que al suspender la ejecucion del hilo con el await, resumamos la ejecucion del metodo en el mismo hilo original)
 
 
+            // contexto de sincronizacion  (en aplicacion winforms es el mismo hilo)
+            Console.WriteLine($"hilo antes del await: {Thread.CurrentThread.ManagedThreadId}");
+            await Task.Delay(500);
+            Console.WriteLine($"hilo despues del await: {Thread.CurrentThread.ManagedThreadId}");
+
+en netcore no se tiene el contexto de sincronizacion por lo cual son hilos diferentes
+
+        [HttpGet("delay/{nombre}")]
+        public async Task<ActionResult<string>> ObtenerSaludoConDelay(string nombre)
+        {
+            Console.WriteLine($"hilo antes del await: {Thread.CurrentThread.ManagedThreadId}");
+            await Task.Delay(500);
+            Console.WriteLine($"hilo después del await: {Thread.CurrentThread.ManagedThreadId}");
+
+            var esperar = RandomGen.NextDouble() * 10 + 1;
+            await Task.Delay((int)esperar * 1000);
+            return $"Hola, {nombre}!";
+        }
 
 
 
