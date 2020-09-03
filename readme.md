@@ -88,7 +88,17 @@ ej: private async void btnIniciar_Click(object sender, EventArgs e)
 
 OJO: si no se hace un await de un task, la posible excepcion queda oculta y no se retorna a la capa superior
 
+La excepcion de un Task unicamente se arroja cuando se hace el await,. sino queda oculta dentro del task
 
+            try
+            {
+                var saludo = await ObtenerSaludo(nombre);
+                MessageBox.Show(saludo); ;
+            }
+            catch (HttpRequestException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
 
 
 
