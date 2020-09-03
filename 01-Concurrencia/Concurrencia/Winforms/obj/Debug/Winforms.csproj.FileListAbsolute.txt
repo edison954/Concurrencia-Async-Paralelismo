@@ -1,0 +1,10 @@
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\bin\Debug\Winforms.exe.config
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\bin\Debug\Winforms.exe
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\bin\Debug\Winforms.pdb
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\obj\Debug\Winforms.csprojAssemblyReference.cache
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\obj\Debug\Winforms.Form1.resources
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\obj\Debug\Winforms.Properties.Resources.resources
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\obj\Debug\Winforms.csproj.GenerateResource.cache
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\obj\Debug\Winforms.csproj.CoreCompileInputs.cache
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\obj\Debug\Winforms.exe
+D:\_git\Concurrencia-en-C#-Async-Paralelismo\Concurrencia-Async-Paralelismo\01-Concurrencia\Concurrencia\Winforms\obj\Debug\Winforms.pdb

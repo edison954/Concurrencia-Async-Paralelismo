@@ -62,6 +62,45 @@ No determinismo
 cuando no se pueden predecir los valores de salida a partir de los valores de entrada
 ej: Random, Paralelismo (ya que no se predice el orden de ejecucion de los hilos, si se necesita orden de llegada entonces evaluar no usar paralelismo)
 
+Concurrencia:
+async - await
+01-concurrencia
+
+en lugar de 
+// Thread.Sleep(5000);
+
+usar
+await Task.Delay(TimeSpan.FromSeconds(5));
+
+
+se retorna
+Task, Task<T>
+ValueTask o ValueTask<T> 
+
+async void    --> evitarlos, unicamente usarlos posiblemente con void para manejadores de eventos
+ej: private async void btnIniciar_Click(object sender, EventArgs e)
+
+      private async Task esperar()
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+
+
+OJO: si no se hace un await de un task, la posible excepcion queda oculta y no se retorna a la capa superior
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
