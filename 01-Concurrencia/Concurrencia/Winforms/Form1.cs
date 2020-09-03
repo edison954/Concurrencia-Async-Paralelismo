@@ -30,7 +30,7 @@ namespace Winforms
         private async void btnIniciar_Click(object sender, EventArgs e)
         {
             loadingGif.Visible = true;
-            var tarjetas = ObtenerTarjetasDeCredito(250000);
+            var tarjetas = await ObtenerTarjetasDeCredito(25000);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try
@@ -52,26 +52,34 @@ namespace Winforms
 
             var tareas = new List<Task>();
 
-            foreach (var tarjeta in tarjetas)
-            {
-                var json = JsonConvert.SerializeObject(tarjeta);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var respuestaTask = httpClient.PostAsync($"{apiURL}/tarjetas", content);
-                tareas.Add(respuestaTask);
-            }
+            await Task.Run(() => {
+                foreach (var tarjeta in tarjetas)
+                {
+                    var json = JsonConvert.SerializeObject(tarjeta);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+                    var respuestaTask = httpClient.PostAsync($"{apiURL}/tarjetas", content);
+                    tareas.Add(respuestaTask);
+                }
+            });
+
             await Task.WhenAll(tareas);
         }
 
-        private List<string> ObtenerTarjetasDeCredito(int cantidadDeTarjetas)
+        private async Task<List<string>> ObtenerTarjetasDeCredito(int cantidadDeTarjetas)
         {
-            var tarjetas = new List<string>();
-            for (int i = 0; i < cantidadDeTarjetas; i++)
+            return await Task.Run(() =>
             {
-                // 0000000000001
-                // 0000000000002
-                tarjetas.Add(i.ToString().PadLeft(16, '0'));
-            }
-            return tarjetas;
+
+                var tarjetas = new List<string>();
+                for (int i = 0; i < cantidadDeTarjetas; i++)
+                {
+                    // 0000000000001
+                    // 0000000000002
+                    tarjetas.Add(i.ToString().PadLeft(16, '0'));
+                }
+                return tarjetas;
+
+            });
         }
 
 
