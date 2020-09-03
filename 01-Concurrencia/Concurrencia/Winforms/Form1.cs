@@ -69,6 +69,15 @@ namespace Winforms
         }
 
 
+
+        private Task ProcesarTarjetasMock(List<string> tarjetas, IProgress<int> progress = null, CancellationToken cancellationToken = default)
+        {
+            // ...
+            return Task.CompletedTask;
+        }
+
+
+
         private async Task ProcesarTarjetas(List<string> tarjetas, IProgress<int> progress = null, CancellationToken cancellationToken = default)
         {
 
@@ -145,6 +154,28 @@ namespace Winforms
             }
 
         }
+
+
+        private  Task<List<string>> ObtenerTarjetasDeCreditoMock(int cantidadDeTarjetas, CancellationToken cancellationToken = default)
+        {
+            var tarjetas = new List<string>();
+            tarjetas.Add("00000000000001");
+
+            return Task.FromResult(tarjetas);
+        }
+
+        private Task ObtenerTareaConError() {
+            return Task.FromException(new ApplicationException());
+        }
+
+        private Task ObtenerTareaCancelada()
+        {
+            cancellationTokenSource = new CancellationTokenSource();
+            return Task.FromCanceled(cancellationTokenSource.Token);
+        }
+
+
+
 
         private async Task<List<string>> ObtenerTarjetasDeCredito(int cantidadDeTarjetas, CancellationToken cancellationToken = default)
         {

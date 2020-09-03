@@ -849,6 +849,35 @@ ej: cancelar la operacion si esta tardando mas de 3s
 cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(3));
 
 
+--------------------------------------------------------------------------
+
+Creando tareas ya terminadas  Task.FromResult           ---> por lo general para pruebas unitarias
+
+        private Task ProcesarTarjetasMock(List<string> tarjetas, IProgress<int> progress = null, CancellationToken cancellationToken = default)
+        {
+            // ...
+            return Task.CompletedTask;
+        }
+
+        private  Task<List<string>> ObtenerTarjetasDeCreditoMock(int cantidadDeTarjetas, CancellationToken cancellationToken = default)
+        {
+            var tarjetas = new List<string>();
+            tarjetas.Add("00000000000001");
+
+            return Task.FromResult(tarjetas);
+        }
+
+        private Task ObtenerTareaConError() {
+            return Task.FromException(new ApplicationException());
+        }
+
+        private Task ObtenerTareaCancelada()
+        {
+            cancellationTokenSource = new CancellationTokenSource();
+            return Task.FromCanceled(cancellationTokenSource.Token);
+        }
+
+
 
 
 
