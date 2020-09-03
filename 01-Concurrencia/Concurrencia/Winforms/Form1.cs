@@ -30,12 +30,15 @@ namespace Winforms
         private async void btnIniciar_Click(object sender, EventArgs e)
         {
             loadingGif.Visible = true;
-            var tarjetas = await ObtenerTarjetasDeCredito(2500);
+            pgProcesamiento.Visible = true;
+            var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
+
+            var tarjetas = await ObtenerTarjetasDeCredito(20);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try
             {
-                await ProcesarTarjetas(tarjetas);
+                await ProcesarTarjetas(tarjetas, reportarProgreso);
             }
             catch (HttpRequestException ex)
             {
@@ -44,15 +47,25 @@ namespace Winforms
 
             MessageBox.Show($"Operación finalizada en {stopwatch.ElapsedMilliseconds / 1000.0} segundos");
             loadingGif.Visible = false;
+            pgProcesamiento.Visible = false;
             // ...
         }
 
-        private async Task ProcesarTarjetas(List<string> tarjetas)
+        private void ReportarProgresoTarjetas(int porcentaje)
+        {
+            pgProcesamiento.Value = porcentaje;
+        }
+
+
+        private async Task ProcesarTarjetas(List<string> tarjetas, IProgress<int> progress = null)
         {
 
-            using var semaforo = new SemaphoreSlim(1000);
+            using var semaforo = new SemaphoreSlim(2);
 
             var tareas = new List<Task<HttpResponseMessage>>();
+
+            var indice = 0;
+
             tareas = tarjetas.Select(async tarjeta =>
             {
                 var json = JsonConvert.SerializeObject(tarjeta);
@@ -60,7 +73,18 @@ namespace Winforms
                 await semaforo.WaitAsync();
                 try
                 {
-                    return await httpClient.PostAsync($"{apiURL}/tarjetas", content);
+                    var tareaInterna = await httpClient.PostAsync($"{apiURL}/tarjetas", content);
+
+                    if (progress != null)
+                    {
+                        indice++;
+                        var porcentaje = (double)indice / tarjetas.Count;
+                        porcentaje = porcentaje * 100;
+                        var porcentajeInt = (int)Math.Round(porcentaje, 0);
+                        progress.Report(porcentajeInt);
+                    }
+
+                    return tareaInterna;
                 }
                 catch (Exception)
                 {

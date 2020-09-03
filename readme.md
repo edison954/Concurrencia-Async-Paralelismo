@@ -258,5 +258,127 @@ Obtener el resultado de las tareas y procesarlo   (en el ejemplo tarjetas rechaz
         }
 
 
+------------------------------ -----------------------------------------
+Reprotar progreso de una tarea
+
+Con IProgress ( es no recomendable para millones de peticiones para ello usar task.whenany)
+
+con IProgress:
+
+        private async void btnIniciar_Click(object sender, EventArgs e)
+        {
+            loadingGif.Visible = true;
+            pgProcesamiento.Visible = true;
+            var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
+
+            var tarjetas = await ObtenerTarjetasDeCredito(20);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            try
+            {
+                await ProcesarTarjetas(tarjetas, reportarProgreso);
+            }
+            catch (HttpRequestException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            MessageBox.Show($"Operación finalizada en {stopwatch.ElapsedMilliseconds / 1000.0} segundos");
+            loadingGif.Visible = false;
+            pgProcesamiento.Visible = false;
+            // ...
+        }
+
+        private void ReportarProgresoTarjetas(int porcentaje)
+        {
+            pgProcesamiento.Value = porcentaje;
+        }
+
+
+        private async Task ProcesarTarjetas(List<string> tarjetas, IProgress<int> progress = null)
+        {
+
+            using var semaforo = new SemaphoreSlim(2);
+
+            var tareas = new List<Task<HttpResponseMessage>>();
+
+            var indice = 0;
+
+            tareas = tarjetas.Select(async tarjeta =>
+            {
+                var json = JsonConvert.SerializeObject(tarjeta);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                await semaforo.WaitAsync();
+                try
+                {
+                    var tareaInterna = await httpClient.PostAsync($"{apiURL}/tarjetas", content);
+
+                    if (progress != null)
+                    {
+                        indice++;
+                        var porcentaje = (double)indice / tarjetas.Count;
+                        porcentaje = porcentaje * 100;
+                        var porcentajeInt = (int)Math.Round(porcentaje, 0);
+                        progress.Report(porcentajeInt);
+                    }
+
+                    return tareaInterna;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally {
+                    semaforo.Release();
+                }
+
+            }).ToList();
+
+            var respuestas = await Task.WhenAll(tareas);
+
+            var tarjetasRechazadas = new List<string>();
+
+            foreach (var respuesta in respuestas)
+            {
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                var respuestaTarjeta = JsonConvert.DeserializeObject<RespuestaTarjeta>(contenido);
+                if (!respuestaTarjeta.Aprobada) {
+                    tarjetasRechazadas.Add(respuestaTarjeta.Tarjeta);
+                }
+            }
+
+            foreach (var tarjeta in tarjetasRechazadas)
+            {
+                Console.WriteLine(tarjeta);
+            }
+
+        }
+
+        private async Task<List<string>> ObtenerTarjetasDeCredito(int cantidadDeTarjetas)
+        {
+            return await Task.Run(() =>
+            {
+
+                var tarjetas = new List<string>();
+                for (int i = 0; i < cantidadDeTarjetas; i++)
+                {
+                    // 0000000000001
+                    // 0000000000002
+                    tarjetas.Add(i.ToString().PadLeft(16, '0'));
+                }
+                return tarjetas;
+
+            });
+        }
+
+
+-----------------------------------------------------
+
+Reportar progreso con Task.WhenAny()
+
+
+
+
+
 
 
