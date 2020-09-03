@@ -124,3 +124,17 @@ Tarjeta 0000000000000002 procesada
 Tarjeta 0000000000000001 procesada
 Tarjeta 0000000000000000 procesada
 Tarjeta 0000000000000004 procesada
+
+
+Throttling:   ---> controlar el numero de peticiones que se pueden manejar
+                        eJ: controlar el uso de las peticiones http
+
+para ello se usan semafors
+
+using var semaforo = new SemaphoreSlim(4000);               --> using  en C# 8   (FW 4.8)   (ej va a permitir correr las tareas de 4000 en 4000)
+en el csproj poner
+
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+
+

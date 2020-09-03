@@ -50,6 +50,8 @@ namespace Winforms
         private async Task ProcesarTarjetas(List<string> tarjetas)
         {
 
+            using var semaforo = new SemaphoreSlim(4000);
+
             var tareas = new List<Task>();
 
             await Task.Run(() => {
