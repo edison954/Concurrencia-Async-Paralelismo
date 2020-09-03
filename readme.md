@@ -172,4 +172,91 @@ ej: se procesan de 3 en tres
 
 SemaphoreSlim (controlar la cantidad de tareas simultaneas que van a ejecutarse en el servidor)        
 
+Obtener el resultado de las tareas y procesarlo   (en el ejemplo tarjetas rechazadas)
+
+
+        private async void btnIniciar_Click(object sender, EventArgs e)
+        {
+            loadingGif.Visible = true;
+            var tarjetas = await ObtenerTarjetasDeCredito(2500);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            try
+            {
+                await ProcesarTarjetas(tarjetas);
+            }
+            catch (HttpRequestException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            MessageBox.Show($"Operación finalizada en {stopwatch.ElapsedMilliseconds / 1000.0} segundos");
+            loadingGif.Visible = false;
+            // ...
+        }
+
+        private async Task ProcesarTarjetas(List<string> tarjetas)
+        {
+
+            using var semaforo = new SemaphoreSlim(1000);
+
+            var tareas = new List<Task<HttpResponseMessage>>();
+            tareas = tarjetas.Select(async tarjeta =>
+            {
+                var json = JsonConvert.SerializeObject(tarjeta);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                await semaforo.WaitAsync();
+                try
+                {
+                    return await httpClient.PostAsync($"{apiURL}/tarjetas", content);
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally {
+                    semaforo.Release();
+                }
+
+            }).ToList();
+
+            var respuestas = await Task.WhenAll(tareas);
+
+            var tarjetasRechazadas = new List<string>();
+
+            foreach (var respuesta in respuestas)
+            {
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                var respuestaTarjeta = JsonConvert.DeserializeObject<RespuestaTarjeta>(contenido);
+                if (!respuestaTarjeta.Aprobada) {
+                    tarjetasRechazadas.Add(respuestaTarjeta.Tarjeta);
+                }
+            }
+
+            foreach (var tarjeta in tarjetasRechazadas)
+            {
+                Console.WriteLine(tarjeta);
+            }
+
+        }
+
+        private async Task<List<string>> ObtenerTarjetasDeCredito(int cantidadDeTarjetas)
+        {
+            return await Task.Run(() =>
+            {
+
+                var tarjetas = new List<string>();
+                for (int i = 0; i < cantidadDeTarjetas; i++)
+                {
+                    // 0000000000001
+                    // 0000000000002
+                    tarjetas.Add(i.ToString().PadLeft(16, '0'));
+                }
+                return tarjetas;
+
+            });
+        }
+
+
+
 
