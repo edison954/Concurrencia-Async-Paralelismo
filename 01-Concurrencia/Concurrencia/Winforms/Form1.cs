@@ -30,7 +30,7 @@ namespace Winforms
         private async void btnIniciar_Click(object sender, EventArgs e)
         {
             loadingGif.Visible = true;
-            var tarjetas = await ObtenerTarjetasDeCredito(15);
+            var tarjetas = await ObtenerTarjetasDeCredito(25000);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try
@@ -50,7 +50,7 @@ namespace Winforms
         private async Task ProcesarTarjetas(List<string> tarjetas)
         {
 
-            using var semaforo = new SemaphoreSlim(3);
+            using var semaforo = new SemaphoreSlim(4000);
 
             var tareas = new List<Task<HttpResponseMessage>>();
             tareas = tarjetas.Select(async tarjeta =>
