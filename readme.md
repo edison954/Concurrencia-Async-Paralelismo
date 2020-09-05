@@ -1203,3 +1203,49 @@ util cuando no se quiere programar un timeout, sino que queremos una tarea que n
 
     }
 }
+
+
+----------------------------------------------------------------
+ValueTask
+la mision de ValueTask es de performance
+escenarios de alta demanda
+ValueTask es un struct   (tipo valor)
+
+usar cuando:
+ lo mas probable del resultado de la operacion sea sincrono
+ cuando la operacion se invoke muy frecuente que el costo de usar task o task<t>  sea importante
+ (en escenarios de alto rendimiento)
+----------------------------------------------------------------
+
+Steam Asyncrono
+
+uso de IEnumerable
+iteraciones sobre un tipo
+
+            var nombres = new List<string>() {  "Edison", "Andrea"};
+            foreach (var nombre in nombres)
+            {
+                Console.WriteLine(nombre);
+            }
+
+
+yield: para que la lista se entregue de uno en uno
+permite generar de uno en uno los valores de un iterable
+
+        private IEnumerable<string> GenerarNombres()
+        {
+            yield return "Edison";
+            yield return "Andrea";            
+        }
+
+
+            foreach (var nombre in GenerarNombres())
+            {
+                Console.WriteLine(nombre);
+            }
+
+
+
+
+
+

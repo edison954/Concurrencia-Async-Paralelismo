@@ -99,7 +99,7 @@ namespace Winforms
             //cancellationTokenSource = new CancellationTokenSource();
             //var token = cancellationTokenSource.Token;
 
-            var nombres = new string[] { "Felipe", "Claudia", "Antonio", "Edison" };
+            //var nombres = new string[] { "Felipe", "Claudia", "Antonio", "Edison" };
 
             //var tareasHTTP = nombres.Select(x => ObtenerSaludo3(x, token));
             //var tarea = await Task.WhenAny(tareasHTTP);
@@ -149,28 +149,56 @@ namespace Winforms
             //Console.WriteLine("");
 
 
-            // Cancelando tareas no cancelables  (metodos asincronos que no reciben un token de cancelacion por ello no se puede usar el cancelationtoken)
-            // util cuando no se quiere programar un timeout, sino que queremos una tarea que no hace nada pero queremos poderla cancelar
+            //// Cancelando tareas no cancelables  (metodos asincronos que no reciben un token de cancelacion por ello no se puede usar el cancelationtoken)
+            //// util cuando no se quiere programar un timeout, sino que queremos una tarea que no hace nada pero queremos poderla cancelar
 
-            cancellationTokenSource = new CancellationTokenSource();
-            try
+            //cancellationTokenSource = new CancellationTokenSource();
+            //try
+            //{
+            //    var resultado = await Task.Run(async () =>
+            //    {
+            //        await Task.Delay(5000);
+            //        return 7;
+            //    }).WithCancellation(cancellationTokenSource.Token);
+            //    Console.WriteLine(resultado);
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //}
+            //finally {
+
+            //    cancellationTokenSource.Dispose();
+            //}
+
+
+            // ValueTask
+            //la mision de ValueTask es de performance
+            //escenarios de alta demanda
+            //ValueTask es un struct   (tipo valor)
+
+            //usar cuando:
+            //    lo mas probable del resultado de la operacion sea sincrono
+            //    cuando la operacion se invoke muy frecuente que el costo de usar task o task<t>  sea importante
+
+
+            // uso de IEnumerable
+            // iteraciones sobre un tipo (por ejemplo de la lista)
+
+            var nombres = new List<string>() {  "Edison", "Andrea"};
+            foreach (var nombre in nombres)
             {
-                var resultado = await Task.Run(async () =>
-                {
-                    await Task.Delay(5000);
-                    return 7;
-                }).WithCancellation(cancellationTokenSource.Token);
-                Console.WriteLine(resultado);
+                Console.WriteLine(nombre);
             }
-            catch (Exception ex)
+
+            // yield: para que la lista se entregue de uno en uno
+            // permite generar de uno en uno los valores de un iterable
+
+            foreach (var nombre in GenerarNombres())
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(nombre);
+                break;
             }
-            finally {
-
-                cancellationTokenSource.Dispose();
-            }
-
 
 
 
@@ -208,6 +236,14 @@ namespace Winforms
             pgProcesamiento.Value = 0;
             // ...
         }
+
+
+        private IEnumerable<string> GenerarNombres()
+        {
+            yield return "Edison";
+            yield return "Andrea";            
+        }
+
 
         public Task EvaluarValor(string valor) 
         {
