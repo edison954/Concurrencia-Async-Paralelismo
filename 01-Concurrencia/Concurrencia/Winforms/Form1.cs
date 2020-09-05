@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -185,24 +186,47 @@ namespace Winforms
             // uso de IEnumerable
             // iteraciones sobre un tipo (por ejemplo de la lista)
 
-            var nombres = new List<string>() {  "Edison", "Andrea"};
-            foreach (var nombre in nombres)
-            {
-                Console.WriteLine(nombre);
-            }
+            //var nombres = new List<string>() {  "Edison", "Andrea"};
+            //foreach (var nombre in nombres)
+            //{
+            //    Console.WriteLine(nombre);
+            //}
 
             // yield: para que la lista se entregue de uno en uno
             // permite generar de uno en uno los valores de un iterable
 
-            await foreach (var nombre in GenerarNombres())
-            {
-                Console.WriteLine(nombre);
-            }
-
             // Stream asyncronos, para poder iterar el tipo task
+            //await foreach (var nombre in GenerarNombres())
+            //{
+            //    Console.WriteLine(nombre);
+            //}
+
+            // tres formas de cancelar stream asyncrono
+
+            //cancellationTokenSource = new CancellationTokenSource();
+            //try
+            //{
+            //    await foreach (var nombre in GenerarNombres(cancellationTokenSource.Token))
+            //    {
+            //        Console.WriteLine(nombre);
+
+            //    }
+            //}
+            //catch (TaskCanceledException ex)
+            //{
+            //    Console.WriteLine("Operacion cancelada");
+            //}
+            //finally {
+            //    cancellationTokenSource?.Dispose();
+            //}
 
 
+            var nombresEnumerable = GenerarNombres();
+            await ProcesarNombres(nombresEnumerable);
+            
+            Console.WriteLine("fin");
 
+            cancellationTokenSource = null;
 
             return;
 
@@ -239,11 +263,35 @@ namespace Winforms
         }
 
 
-        private async IAsyncEnumerable<string> GenerarNombres()
+        private async Task ProcesarNombres(IAsyncEnumerable<string> nombresEnumerable)
+        {
+
+            cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                await foreach (var nombre  in nombresEnumerable.WithCancellation(cancellationTokenSource.Token))
+                {
+                    Console.WriteLine(nombre);
+                }
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine("Operacion cancelada");
+            }
+            finally
+            {
+                cancellationTokenSource?.Dispose();
+            }
+        }
+
+
+        private async IAsyncEnumerable<string> GenerarNombres([EnumeratorCancellation]  CancellationToken token = default)
         {
             yield return "Edison";
-            await Task.Delay(2000);
-            yield return "Andrea";            
+            await Task.Delay(2000, token);
+            yield return "Andrea";
+            await Task.Delay(2000, token);
+            yield return "Paola";
         }
 
 

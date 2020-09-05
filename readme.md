@@ -1263,5 +1263,89 @@ Stream asyncronos, para poder iterar el tipo task  (instalar paquete de nuget pa
             yield return "Andrea";            
         }
 
+-- Tres formas de cancelar el stream asincrono
+
+    1. break            
+
+            await foreach (var nombre in GenerarNombres())
+            {
+                Console.WriteLine(nombre);
+                break;
+            }
 
 
+    2. token de cancelacion
+
+
+        private async IAsyncEnumerable<string> GenerarNombres(CancellationToken token = default)
+        {
+            yield return "Edison";
+            await Task.Delay(2000, token);
+            yield return "Andrea";
+            await Task.Delay(2000, token);
+            yield return "Paola";
+        }    
+
+            cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                await foreach (var nombre in GenerarNombres())
+                {
+                    Console.WriteLine(nombre);
+
+                }
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine("Operacion cancelada");
+            }
+            finally {
+                cancellationTokenSource?.Dispose();
+            }
+
+            Console.WriteLine("fin");
+
+
+    3. 
+
+
+        private async IAsyncEnumerable<string> GenerarNombres([EnumeratorCancellation]  CancellationToken token = default)
+        {
+            yield return "Edison";
+            await Task.Delay(2000, token);
+            yield return "Andrea";
+            await Task.Delay(2000, token);
+            yield return "Paola";
+        }
+
+        private async Task ProcesarNombres(IAsyncEnumerable<string> nombresEnumerable)
+        {
+
+            cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                await foreach (var nombre  in nombresEnumerable.WithCancellation(cancellationTokenSource.Token))
+                {
+                    Console.WriteLine(nombre);
+                }
+            }
+            catch (TaskCanceledException ex)
+            {
+                Console.WriteLine("Operacion cancelada");
+            }
+            finally
+            {
+                cancellationTokenSource?.Dispose();
+            }
+        }        
+
+
+            var nombresEnumerable = GenerarNombres();
+            await ProcesarNombres(nombresEnumerable);
+            
+            Console.WriteLine("fin");
+
+            cancellationTokenSource = null;
+
+
+---------------------------------------------------------------
