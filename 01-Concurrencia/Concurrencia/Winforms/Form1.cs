@@ -120,15 +120,33 @@ namespace Winforms
             //Console.WriteLine(contenido.ToUpper());
 
             //3.
-            var contenido = await EjecutarUno(
-                    (ct) => ObtenerSaludo3("Edison", ct),
-                    (ct) => ObtenerAdios("Edison", ct)
-                );
-            Console.WriteLine(contenido.ToUpper());
+            //var contenido = await EjecutarUno(
+            //        (ct) => ObtenerSaludo3("Edison", ct),
+            //        (ct) => ObtenerAdios("Edison", ct)
+            //    );
+            //Console.WriteLine(contenido.ToUpper());
 
 
             // End Patron solo una tarea
 
+
+            // Controlar el resultado de la tarea con TaskCompletionSource
+            var tarea = EvaluarValor(txtInput.Text);
+            Console.WriteLine("Inicio");
+            Console.WriteLine($"Is completed: {tarea.IsCompleted}");
+            Console.WriteLine($"Is canceled: {tarea.IsCanceled}");
+            Console.WriteLine($"Is faulted: {tarea.IsFaulted}");
+
+            try
+            {
+                await tarea;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepcion: {ex.Message}");
+            }
+            Console.WriteLine("fin");
+            Console.WriteLine("");
 
 
             return;
@@ -165,7 +183,26 @@ namespace Winforms
             // ...
         }
 
+        public Task EvaluarValor(string valor) 
+        {
+            var tcs = new TaskCompletionSource<object>
+                (TaskCreationOptions.RunContinuationsAsynchronously);
 
+            if (valor == "1")
+            {
+                tcs.SetResult(null);
+            }
+            else if (valor == "2")
+            {
+                tcs.SetCanceled();
+            }
+            else {
+                tcs.SetException(new ApplicationException($"Valor inválido: {valor}"));
+            }
+
+            return tcs.Task;
+        
+        }
 
 
 
