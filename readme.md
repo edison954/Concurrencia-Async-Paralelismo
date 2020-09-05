@@ -1151,3 +1151,55 @@ podemos controlar tareas pero somos nosotros los que establecemos el estado (exi
         }
 
 ----------------------------------------------------------
+Cualquier tarea no cancelable es cancelable
+Cancelando tareas no cancelables  (metodos asincronos que no reciben un token de cancelacion por ello no se puede usar el cancelationtoken)
+util cuando no se quiere programar un timeout, sino que queremos una tarea que no hace nada pero queremos poderla cancelar
+
+
+            cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                var resultado = await Task.Run(async () =>
+                {
+                    await Task.Delay(5000);
+                    return 7;
+                }).WithCancellation(cancellationTokenSource.Token);
+                Console.WriteLine(resultado);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally {
+
+                cancellationTokenSource.Dispose();
+            }
+
+
+    public static class TaskExtensionMethods
+    {
+
+        public static async Task<T> WithCancellation<T>(this Task<T> task,
+            CancellationToken cancellationToken)
+        {
+
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (cancellationToken.Register(state =>
+            {
+                ((TaskCompletionSource<object>)state).TrySetResult(null);
+            }, tcs)) 
+            {
+                var tareaResultante = await Task.WhenAny(task, tcs.Task);
+                if (tareaResultante == tcs.Task) 
+                {
+                    throw new OperationCanceledException(cancellationToken);
+                }
+
+                return await task;
+
+            }
+        
+        }
+
+    }
+}

@@ -130,23 +130,49 @@ namespace Winforms
             // End Patron solo una tarea
 
 
-            // Controlar el resultado de la tarea con TaskCompletionSource
-            var tarea = EvaluarValor(txtInput.Text);
-            Console.WriteLine("Inicio");
-            Console.WriteLine($"Is completed: {tarea.IsCompleted}");
-            Console.WriteLine($"Is canceled: {tarea.IsCanceled}");
-            Console.WriteLine($"Is faulted: {tarea.IsFaulted}");
+            //// Controlar el resultado de la tarea con TaskCompletionSource
+            //var tarea = EvaluarValor(txtInput.Text);
+            //Console.WriteLine("Inicio");
+            //Console.WriteLine($"Is completed: {tarea.IsCompleted}");
+            //Console.WriteLine($"Is canceled: {tarea.IsCanceled}");
+            //Console.WriteLine($"Is faulted: {tarea.IsFaulted}");
 
+            //try
+            //{
+            //    await tarea;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"Excepcion: {ex.Message}");
+            //}
+            //Console.WriteLine("fin");
+            //Console.WriteLine("");
+
+
+            // Cancelando tareas no cancelables  (metodos asincronos que no reciben un token de cancelacion por ello no se puede usar el cancelationtoken)
+            // util cuando no se quiere programar un timeout, sino que queremos una tarea que no hace nada pero queremos poderla cancelar
+
+            cancellationTokenSource = new CancellationTokenSource();
             try
             {
-                await tarea;
+                var resultado = await Task.Run(async () =>
+                {
+                    await Task.Delay(5000);
+                    return 7;
+                }).WithCancellation(cancellationTokenSource.Token);
+                Console.WriteLine(resultado);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Excepcion: {ex.Message}");
+                Console.WriteLine(ex.Message);
             }
-            Console.WriteLine("fin");
-            Console.WriteLine("");
+            finally {
+
+                cancellationTokenSource.Dispose();
+            }
+
+
+
 
 
             return;
