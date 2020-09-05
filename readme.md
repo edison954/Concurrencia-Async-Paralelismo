@@ -1245,7 +1245,23 @@ permite generar de uno en uno los valores de un iterable
             }
 
 
+----
 
+Stream asyncronos, para poder iterar el tipo task  (instalar paquete de nuget para poder usar IAsyncEnumerable)
+
+            await foreach (var nombre in GenerarNombres())
+            {
+                Console.WriteLine(nombre);
+                break;
+            }
+
+
+        private async IAsyncEnumerable<string> GenerarNombres()
+        {
+            yield return "Edison";
+            await Task.Delay(2000);
+            yield return "Andrea";            
+        }
 
 
 

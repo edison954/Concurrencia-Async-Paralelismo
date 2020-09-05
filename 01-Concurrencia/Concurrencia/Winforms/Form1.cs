@@ -194,11 +194,12 @@ namespace Winforms
             // yield: para que la lista se entregue de uno en uno
             // permite generar de uno en uno los valores de un iterable
 
-            foreach (var nombre in GenerarNombres())
+            await foreach (var nombre in GenerarNombres())
             {
                 Console.WriteLine(nombre);
-                break;
             }
+
+            // Stream asyncronos, para poder iterar el tipo task
 
 
 
@@ -238,9 +239,10 @@ namespace Winforms
         }
 
 
-        private IEnumerable<string> GenerarNombres()
+        private async IAsyncEnumerable<string> GenerarNombres()
         {
             yield return "Edison";
+            await Task.Delay(2000);
             yield return "Andrea";            
         }
 
