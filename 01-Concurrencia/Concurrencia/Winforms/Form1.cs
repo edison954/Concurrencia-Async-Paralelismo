@@ -69,32 +69,60 @@ namespace Winforms
 
             //await Reintentar(ProcesarSaludo);
 
-            try
+
+            //// Patron de reintento ***
+
+            //try
+            //{
+            //    var contenido = await Reintentar(async () =>
+            //    {
+            //        using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/edison"))
+            //        {
+            //            respuesta.EnsureSuccessStatusCode();
+            //            return await respuesta.Content.ReadAsStringAsync();
+            //        }
+            //    });
+
+            //    Console.WriteLine(contenido);
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine("Excepcion atrapada");                
+            //}
+
+            //// End Patron de reintento ***
+
+            // Patron solo una tarea
+            // solo quiero que se ejecute una tarea y canccelar las demas
+            //cancellationTokenSource = new CancellationTokenSource();
+            //var token = cancellationTokenSource.Token;
+
+            var nombres = new string[] { "Felipe", "Claudia", "Antonio", "Edison" };
+
+            //var tareasHTTP = nombres.Select(x => ObtenerSaludo3(x, token));
+            //var tarea = await Task.WhenAny(tareasHTTP);
+            //var contenido = await tarea;
+            //Console.WriteLine(contenido.ToUpper());
+            //cancellationTokenSource.Cancel();
+
+            var tareasHTTP = nombres.Select(x =>
             {
-                var contenido = await Reintentar(async () =>
-                {
-                    using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos2/edison"))
-                    {
-                        respuesta.EnsureSuccessStatusCode();
-                        return await respuesta.Content.ReadAsStringAsync();
-                    }
-                });
+                Func<CancellationToken, Task<string>> funcion = (ct) => ObtenerSaludo3(x, ct);
+                return funcion;
 
-                Console.WriteLine(contenido);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Excepcion atrapada");                
-            }
+            });
+
+            var contenido = await EjecutarUno(tareasHTTP);
+            Console.WriteLine(contenido.ToUpper());
 
 
-
+            // End Patron solo una tarea
 
 
 
             return;
 
-            cancellationTokenSource = new CancellationTokenSource();
+            //cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(30));
 
 
@@ -114,7 +142,7 @@ namespace Winforms
             {
                 MessageBox.Show(ex.Message);
             }
-            catch (TaskCanceledException ex) 
+            catch (TaskCanceledException ex)
             {
                 MessageBox.Show("La operacion ha sido cancelada");
             }
@@ -125,6 +153,19 @@ namespace Winforms
             pgProcesamiento.Value = 0;
             // ...
         }
+
+        private async Task<T> EjecutarUno<T>(IEnumerable<Func<CancellationToken, Task<T>>> funciones) 
+        {
+
+            var cts = new CancellationTokenSource();
+            var tareas = funciones.Select(funcion => funcion(cts.Token));
+            var tarea = await Task.WhenAny(tareas);
+            cts.Cancel();
+            return await tarea;
+
+        }
+
+
 
         private async Task ProcesarSaludo() {
 
@@ -333,6 +374,21 @@ namespace Winforms
                 return saludo;
             }
         }
+
+
+
+        private async Task<string> ObtenerSaludo3(string nombre, CancellationToken cancellationToken)
+        {
+            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos/delay/{nombre}", cancellationToken))
+            {
+                var saludo = await respuesta.Content.ReadAsStringAsync();
+                Console.WriteLine(saludo);
+                return saludo;
+            }
+        }
+
+
+
 
         private async Task<string> ObtenerSaludo2(string nombre)
         {

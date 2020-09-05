@@ -1032,8 +1032,53 @@ metodo sofisticado  (patron de reintento)
             }
 
 
+------------------------------------------------------------
+Patron una sola tarea               -->> poner a ejecutar las tareas y cancelarlas cuando la primera termine
+
+            cancellationTokenSource = new CancellationTokenSource();
+            var token = cancellationTokenSource.Token;
+
+            var nombres = new string[] { "Felipe", "Claudia", "Antonio", "Edison" };
+
+            var tareasHTTP = nombres.Select(x => ObtenerSaludo3(x, token));
+            var tarea = await Task.WhenAny(tareasHTTP);
+            var contenido = await tarea;
+            Console.WriteLine(contenido.ToUpper());
+            cancellationTokenSource.Cancel();
 
 
+        private async Task<string> ObtenerSaludo3(string nombre, CancellationToken cancellationToken)
+        {
+            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos/delay/{nombre}", cancellationToken))
+            {
+                var saludo = await respuesta.Content.ReadAsStringAsync();
+                Console.WriteLine(saludo);
+                return saludo;
+            }
+        }
 
 
+ eso mismo con el patron seria:
 
+
+             var tareasHTTP = nombres.Select(x =>
+            {
+                Func<CancellationToken, Task<string>> funcion = (ct) => ObtenerSaludo3(x, ct);
+                return funcion;
+
+            });
+
+            var contenido = await EjecutarUno(tareasHTTP);
+            Console.WriteLine(contenido.ToUpper());
+
+
+        private async Task<T> EjecutarUno<T>(IEnumerable<Func<CancellationToken, Task<T>>> funciones) 
+        {
+
+            var cts = new CancellationTokenSource();
+            var tareas = funciones.Select(funcion => funcion(cts.Token));
+            var tarea = await Task.WhenAny(tareas);
+            cts.Cancel();
+            return await tarea;
+
+        }
