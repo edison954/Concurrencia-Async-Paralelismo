@@ -1082,3 +1082,31 @@ Patron una sola tarea               -->> poner a ejecutar las tareas y cancelarl
             return await tarea;
 
         }
+
+otra forma: (si se tienen diferentes funciones a ejecutar)
+
+
+            var contenido = await EjecutarUno(
+                    (ct) => ObtenerSaludo3("Edison", ct),
+                    (ct) => ObtenerAdios("Edison", ct)
+                );
+            Console.WriteLine(contenido.ToUpper());
+
+        private async Task<T> EjecutarUno<T>(params Func<CancellationToken, Task<T>>[] funciones)
+        {
+
+            var cts = new CancellationTokenSource();
+            var tareas = funciones.Select(funcion => funcion(cts.Token));
+            var tarea = await Task.WhenAny(tareas);
+            cts.Cancel();
+            return await tarea;
+
+        }
+
+
+-------------------------------------------------------------------
+
+Controlar resultado de la tarea con TaskCompletionSource
+- podemos controlar tareas pero somos nosotros los que establecemos el estado (exitoso cancelado, excepcion)
+
+

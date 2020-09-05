@@ -94,6 +94,8 @@ namespace Winforms
 
             // Patron solo una tarea
             // solo quiero que se ejecute una tarea y canccelar las demas
+
+            //1.
             //cancellationTokenSource = new CancellationTokenSource();
             //var token = cancellationTokenSource.Token;
 
@@ -105,14 +107,23 @@ namespace Winforms
             //Console.WriteLine(contenido.ToUpper());
             //cancellationTokenSource.Cancel();
 
-            var tareasHTTP = nombres.Select(x =>
-            {
-                Func<CancellationToken, Task<string>> funcion = (ct) => ObtenerSaludo3(x, ct);
-                return funcion;
 
-            });
+            //2.
+            //var tareasHTTP = nombres.Select(x =>
+            //{
+            //    Func<CancellationToken, Task<string>> funcion = (ct) => ObtenerSaludo3(x, ct);
+            //    return funcion;
 
-            var contenido = await EjecutarUno(tareasHTTP);
+            //});
+
+            //var contenido = await EjecutarUno(tareasHTTP);
+            //Console.WriteLine(contenido.ToUpper());
+
+            //3.
+            var contenido = await EjecutarUno(
+                    (ct) => ObtenerSaludo3("Edison", ct),
+                    (ct) => ObtenerAdios("Edison", ct)
+                );
             Console.WriteLine(contenido.ToUpper());
 
 
@@ -152,6 +163,21 @@ namespace Winforms
             pgProcesamiento.Visible = false;
             pgProcesamiento.Value = 0;
             // ...
+        }
+
+
+
+
+
+        private async Task<T> EjecutarUno<T>(params Func<CancellationToken, Task<T>>[] funciones)
+        {
+
+            var cts = new CancellationTokenSource();
+            var tareas = funciones.Select(funcion => funcion(cts.Token));
+            var tarea = await Task.WhenAny(tareas);
+            cts.Cancel();
+            return await tarea;
+
         }
 
         private async Task<T> EjecutarUno<T>(IEnumerable<Func<CancellationToken, Task<T>>> funciones) 
@@ -371,6 +397,17 @@ namespace Winforms
             {
                 respuesta.EnsureSuccessStatusCode();
                 var saludo = await respuesta.Content.ReadAsStringAsync();
+                return saludo;
+            }
+        }
+
+
+        private async Task<string> ObtenerAdios(string nombre, CancellationToken cancellationToken)
+        {
+            using (var respuesta = await httpClient.GetAsync($"{apiURL}/saludos/adios/{nombre}", cancellationToken))
+            {
+                var saludo = await respuesta.Content.ReadAsStringAsync();
+                Console.WriteLine(saludo);
                 return saludo;
             }
         }

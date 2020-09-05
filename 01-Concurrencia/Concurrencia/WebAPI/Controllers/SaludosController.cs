@@ -30,6 +30,20 @@ namespace WebAPI.Controllers
             return $"Hola, {nombre}!";
         }
 
+        [HttpGet("adios/{nombre}")]
+        public async Task<ActionResult<string>> ObtenerAdiosConDelay(string nombre)
+        {
+            Console.WriteLine($"hilo antes del await: {Thread.CurrentThread.ManagedThreadId}");
+            await Task.Delay(500);
+            Console.WriteLine($"hilo después del await: {Thread.CurrentThread.ManagedThreadId}");
+
+            var esperar = RandomGen.NextDouble() * 10 + 1;
+            await Task.Delay((int)esperar * 1000);
+            return $"Bye, {nombre}!";
+        }
+
+
+
 
     }
 }
