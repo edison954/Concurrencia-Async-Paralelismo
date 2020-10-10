@@ -1495,7 +1495,16 @@ Solucion2 : hacer el Flush explicitamente
 
 
 
+            //PARALELISMO  Parallel.For
 
+            Console.WriteLine("Secuencial ");
+            for (int i = 0; i < 11; i++)
+            {
+                Console.WriteLine(i);
+            }
+
+            Console.WriteLine("Paralelo ");
+            Parallel.For(0, 11, i => Console.WriteLine(i));
 
 
 

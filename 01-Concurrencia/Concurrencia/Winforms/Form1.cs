@@ -252,40 +252,54 @@ namespace Winforms
             //Console.WriteLine($"----");
             //Console.WriteLine($"Resultado Run: {resultadoRun}");
 
-            //PARALELISMO  WhenAll
-            var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
-            var destinoBaseSecuencial = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
-            var destinoBaseParalelo = Path.Combine(directorioActual, @"Imagenes\resultado-paralelo");
-            PrepararEjecucion(destinoBaseParalelo, destinoBaseSecuencial);
-            Console.WriteLine("inicio ");
+            ////PARALELISMO  WhenAll
+            //var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
+            //var destinoBaseSecuencial = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
+            //var destinoBaseParalelo = Path.Combine(directorioActual, @"Imagenes\resultado-paralelo");
+            //PrepararEjecucion(destinoBaseParalelo, destinoBaseSecuencial);
+            //Console.WriteLine("inicio ");
 
-            var imagenes = ObtenerImagenes();
+            //var imagenes = ObtenerImagenes();
 
-            // parte secuencial
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            foreach (var imagen in imagenes)
+            //// parte secuencial
+            //var stopwatch = new Stopwatch();
+            //stopwatch.Start();
+            //foreach (var imagen in imagenes)
+            //{
+            //    await ProcesarImagen(destinoBaseSecuencial, imagen);
+            //}
+
+            //var tiempoSecuencial = stopwatch.ElapsedMilliseconds / 1000.0;
+            //Console.WriteLine("Secuencial - duracion en segundos: {0}", tiempoSecuencial);
+
+            //stopwatch.Restart();
+
+            //// parte paralelo
+
+            //var tareasEnumerable = imagenes.Select(async imagen => await ProcesarImagen(destinoBaseParalelo, imagen));
+            //await Task.WhenAll(tareasEnumerable);
+
+
+            //var tiempoParalelo = stopwatch.ElapsedMilliseconds / 1000.0;
+            //Console.WriteLine("Paralelo - duracion en segundos: {0}", tiempoParalelo);
+
+            //EscribirComparacion(tiempoSecuencial, tiempoParalelo);
+
+            //Console.WriteLine("fin");
+
+
+            //PARALELISMO  Parallel.For
+
+            Console.WriteLine("Secuencial ");
+            for (int i = 0; i < 11; i++)
             {
-                await ProcesarImagen(destinoBaseSecuencial, imagen);
+                Console.WriteLine(i);
             }
 
-            var tiempoSecuencial = stopwatch.ElapsedMilliseconds / 1000.0;
-            Console.WriteLine("Secuencial - duracion en segundos: {0}", tiempoSecuencial);
-
-            stopwatch.Restart();
-
-            // parte paralelo
-
-            var tareasEnumerable = imagenes.Select(async imagen => await ProcesarImagen(destinoBaseParalelo, imagen));
-            await Task.WhenAll(tareasEnumerable);
+            Console.WriteLine("Paralelo ");
+            Parallel.For(0, 11, i => Console.WriteLine(i));
 
 
-            var tiempoParalelo = stopwatch.ElapsedMilliseconds / 1000.0;
-            Console.WriteLine("Paralelo - duracion en segundos: {0}", tiempoParalelo);
-            
-            EscribirComparacion(tiempoSecuencial, tiempoParalelo);
-
-            Console.WriteLine("fin");
 
             return;
 
@@ -297,7 +311,7 @@ namespace Winforms
             pgProcesamiento.Visible = true;
             var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
 
-            //var stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             try
