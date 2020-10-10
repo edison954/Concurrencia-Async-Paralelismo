@@ -1444,7 +1444,40 @@ Solucion2 : hacer el Flush explicitamente
  }
 
 
- 
+-- Paralelismo ---
+
+
+           //PARALELISMO  WhenAll
+            var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
+            var destinoBaseSecuencial = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
+            var destinoBaseParalelo = Path.Combine(directorioActual, @"Imagenes\resultado-paralelo");
+            PrepararEjecucion(destinoBaseParalelo, destinoBaseSecuencial);
+            Console.WriteLine("inicio ");
+
+            var imagenes = ObtenerImagenes();
+
+            // parte secuencial
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            foreach (var imagen in imagenes)
+            {
+                await ProcesarImagen(destinoBaseSecuencial, imagen);
+            }
+
+            Console.WriteLine("Secuencial - duracion en segundos: {0}", stopwatch.ElapsedMilliseconds / 1000.0);
+
+            stopwatch.Restart();
+
+            // parte paralelo
+
+            var tareasEnumerable = imagenes.Select(async imagen => await ProcesarImagen(destinoBaseParalelo, imagen));
+            await Task.WhenAll(tareasEnumerable);
+
+            Console.WriteLine("Paralelo - duracion en segundos: {0}", stopwatch.ElapsedMilliseconds / 1000.0);
+
+
+            Console.WriteLine("fin");
+
 
 
 

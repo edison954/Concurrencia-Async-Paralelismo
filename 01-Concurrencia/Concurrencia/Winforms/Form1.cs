@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -236,20 +237,51 @@ namespace Winforms
 
             //Evitar uso de Task.Factory.StartNew
 
-            var resultadoStartNew = await Task.Factory.StartNew(async () => {
-                await Task.Delay(1000);
-                return 7;
-            }).Unwrap();
+            //var resultadoStartNew = await Task.Factory.StartNew(async () => {
+            //    await Task.Delay(1000);
+            //    return 7;
+            //}).Unwrap();
 
-            var resultadoRun = await Task.Run(async () =>
+            //var resultadoRun = await Task.Run(async () =>
+            //{
+            //    await Task.Delay(1000);
+            //    return 7;
+            //});
+
+            //Console.WriteLine($"Resultado StartNew: {resultadoStartNew}");
+            //Console.WriteLine($"----");
+            //Console.WriteLine($"Resultado Run: {resultadoRun}");
+
+            //PARALELISMO  WhenAll
+            var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
+            var destinoBaseSecuencial = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
+            var destinoBaseParalelo = Path.Combine(directorioActual, @"Imagenes\resultado-paralelo");
+            PrepararEjecucion(destinoBaseParalelo, destinoBaseSecuencial);
+            Console.WriteLine("inicio ");
+
+            var imagenes = ObtenerImagenes();
+
+            // parte secuencial
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            foreach (var imagen in imagenes)
             {
-                await Task.Delay(1000);
-                return 7;
-            });
+                await ProcesarImagen(destinoBaseSecuencial, imagen);
+            }
 
-            Console.WriteLine($"Resultado StartNew: {resultadoStartNew}");
-            Console.WriteLine($"----");
-            Console.WriteLine($"Resultado Run: {resultadoRun}");
+            Console.WriteLine("Secuencial - duracion en segundos: {0}", stopwatch.ElapsedMilliseconds / 1000.0);
+
+            stopwatch.Restart();
+
+            // parte paralelo
+
+            var tareasEnumerable = imagenes.Select(async imagen => await ProcesarImagen(destinoBaseParalelo, imagen));
+            await Task.WhenAll(tareasEnumerable);
+
+            Console.WriteLine("Paralelo - duracion en segundos: {0}", stopwatch.ElapsedMilliseconds / 1000.0);
+
+
+            Console.WriteLine("fin");
 
             return;
 
@@ -261,7 +293,7 @@ namespace Winforms
             pgProcesamiento.Visible = true;
             var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
 
-            var stopwatch = new Stopwatch();
+            //var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             try
@@ -284,6 +316,93 @@ namespace Winforms
             pgProcesamiento.Value = 0;
             // ...
         }
+
+
+        private async Task ProcesarImagen(string directorio, Imagen imagen)
+        {
+            var response = await httpClient.GetAsync(imagen.Url);
+            var content = await response.Content.ReadAsByteArrayAsync();
+
+            Bitmap bitmap;
+            using (var ms = new MemoryStream(content))
+            {
+                bitmap = new Bitmap(ms);
+            }
+
+            bitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            var destino = Path.Combine(directorio, imagen.Nombre);
+            bitmap.Save(destino);
+        }
+
+        private static List<Imagen> ObtenerImagenes()
+        {
+            var imagenes = new List<Imagen>();
+            for (int i = 0; i < 5; i++)
+            {
+                {
+                    imagenes.Add(
+                    new Imagen()
+                    {
+                        Nombre = $"Spider-Man Spider-Verse {i}.jpg",
+                        Url = "https://m.media-amazon.com/images/M/MV5BMjMwNDkxMTgzOF5BMl5BanBnXkFtZTgwNTkwNTQ3NjM@._V1_UY863_.jpg"
+                    });
+                    imagenes.Add(
+
+                    new Imagen()
+                    {
+                        Nombre = $"Spider-Man Far From Home {i}.jpg",
+                        Url = "https://m.media-amazon.com/images/M/MV5BMGZlNTY1ZWUtYTMzNC00ZjUyLWE0MjQtMTMxN2E3ODYxMWVmXkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_UY863_.jpg"
+                    });
+                    imagenes.Add(
+
+                    new Imagen()
+                    {
+                        Nombre = $"Moana {i}.jpg",
+                        Url = "https://lumiere-a.akamaihd.net/v1/images/r_moana_header_poststreet_mobile_bd574a31.jpeg?region=0,0,640,480"
+                    });
+                    imagenes.Add(
+
+                    new Imagen()
+                    {
+                        Nombre = $"Avengers Infinity War {i}.jpg",
+                        Url = "https://img.redbull.com/images/c_crop,x_143,y_0,h_1080,w_1620/c_fill,w_1500,h_1000/q_auto,f_auto/redbullcom/2018/04/23/e4a3d8a5-2c44-480a-b300-1b2b03e205a5/avengers-infinity-war-poster"
+                    });
+                    imagenes.Add(
+
+                    new Imagen()
+                    {
+                        Nombre = $"Avengers Endgame {i}.jpg",
+                        Url = "https://hipertextual.com/files/2019/04/hipertextual-nuevo-trailer-avengers-endgame-agradece-fans-universo-marvel-2019351167.jpg"
+                    });
+                }
+            }
+
+            return imagenes;
+        }
+
+
+        private void PrepararEjecucion(string destinoBaseParalelo, string destinoBaseSecuencial)
+        {
+            if (!Directory.Exists(destinoBaseParalelo)) {
+                Directory.CreateDirectory(destinoBaseParalelo);
+            }
+            if (!Directory.Exists(destinoBaseSecuencial))
+            {
+                Directory.CreateDirectory(destinoBaseSecuencial);
+            }
+            BorrarArchivos(destinoBaseParalelo);
+            BorrarArchivos(destinoBaseSecuencial);
+
+        }
+
+        private void BorrarArchivos(string directorio) {
+            var archivos = Directory.EnumerateFiles(directorio);
+            foreach (var archivo  in archivos)
+            {
+                File.Delete(archivo);
+            }
+        }
+
 
         private async Task<string> ObtenerValor()
         {
