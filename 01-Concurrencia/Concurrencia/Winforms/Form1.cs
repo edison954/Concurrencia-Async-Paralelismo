@@ -269,7 +269,8 @@ namespace Winforms
                 await ProcesarImagen(destinoBaseSecuencial, imagen);
             }
 
-            Console.WriteLine("Secuencial - duracion en segundos: {0}", stopwatch.ElapsedMilliseconds / 1000.0);
+            var tiempoSecuencial = stopwatch.ElapsedMilliseconds / 1000.0;
+            Console.WriteLine("Secuencial - duracion en segundos: {0}", tiempoSecuencial);
 
             stopwatch.Restart();
 
@@ -278,8 +279,11 @@ namespace Winforms
             var tareasEnumerable = imagenes.Select(async imagen => await ProcesarImagen(destinoBaseParalelo, imagen));
             await Task.WhenAll(tareasEnumerable);
 
-            Console.WriteLine("Paralelo - duracion en segundos: {0}", stopwatch.ElapsedMilliseconds / 1000.0);
 
+            var tiempoParalelo = stopwatch.ElapsedMilliseconds / 1000.0;
+            Console.WriteLine("Paralelo - duracion en segundos: {0}", tiempoParalelo);
+            
+            EscribirComparacion(tiempoSecuencial, tiempoParalelo);
 
             Console.WriteLine("fin");
 
@@ -315,6 +319,16 @@ namespace Winforms
             pgProcesamiento.Visible = false;
             pgProcesamiento.Value = 0;
             // ...
+        }
+
+
+        public static void EscribirComparacion(double tiempo1, double tiempo2)
+        {
+            var diferencia = tiempo2 - tiempo1;
+            diferencia = Math.Round(diferencia, 2);
+            var incrementoPorcentual = ((tiempo2 - tiempo1) / tiempo1) * 100;
+            incrementoPorcentual = Math.Round(incrementoPorcentual, 2);
+            Console.WriteLine($"Diferencia {diferencia} ({incrementoPorcentual}%)");
         }
 
 
