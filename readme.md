@@ -1419,6 +1419,34 @@ resultado:
             Resultado Run: 7
 
 
+-- Hacer Dispose al CancellationTokenSource  (debido a que usa timers, siempre se debe realizar el dispose cuando se trabaje con ellos)
+usar Dispose o Using para ello
+
+-- Dispose Correcto de Streams
+este codigo es un problema
+
+ private async Task MetodoAsync(){
+     using( var streamWriter = new StreamWriter(stream)) {
+         await streamWriter.WriteAsync("Hola Mundo");
+     }
+ }
+
+Solucion1 :  usar DisposeAsync, el cual crea el bufer de manear asyncrona
+
+ await using( var streamWriter = new StreamWriter(stream)) {
+     await streamWriter.WriteAsync("Hola mundo");
+ }
+
+Solucion2 : hacer el Flush explicitamente
+ using( var streamWriter = new StreamWriter(stream)) {
+     await streamWriter.WriteAsync("Hola mundo");
+     await streamWriter.FlushAsync();
+ }
+
+
+ 
+
+
 
 
 
