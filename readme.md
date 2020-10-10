@@ -1349,3 +1349,82 @@ Stream asyncronos, para poder iterar el tipo task  (instalar paquete de nuget pa
 
 
 ---------------------------------------------------------------
+
+ANTIPATRONES
+
+Sincrono dentro de Asyncrono            (producen deadlock)
+Asyncrono detro de sincrono
+StarNew
+async void                      (puede hacer colapsar toda una aplicacion web)
+Dispose del CancellationTokenSource
+Dispose Asincrono de Streams
+
+
+
+Sincrono dentro de Asyncrono   (sync-over-async)
+
+        private async Task<string> ObtenerValor()
+        {
+            await Task.Delay(1000);
+            return "Edison";
+        }
+
+        //asincrono
+        private async void btnIniciar_Click(object sender, EventArgs e)
+        {
+
+            //sincrono
+            var valor = ObtenerValor().Result;              //esto bloquea, esta mal
+            Console.WriteLine(valor);
+
+            var a = 2 + 2;  //esto no bloquea, esta bn            
+        }
+
+        
+
+-- evitar Task.Factory.StartNew
+preferir esto:
+ await Task.Run(() => {});
+
+y no esto:
+
+ await Task.Factory.StartNew(() => {}, 
+  CancellationToken.None,
+  TaskCreationOptions.DenyChildAttach,
+  TaskScheduler.Default
+  );
+
+
+ejemplo
+
+            var resultadoStartNew = await Task.Factory.StartNew(async () => {
+                await Task.Delay(1000);
+                return 7;
+            });
+
+            var resultadoRun = await Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                return 7;
+            });
+
+            Console.WriteLine($"Resultado StartNew: {resultadoStartNew}");
+            Console.WriteLine($"----");
+            Console.WriteLine($"Resultado Run: {resultadoRun}");
+
+
+resultado:
+            Resultado StartNew: System.Threading.Tasks.Task`1[System.Int32]
+            ----
+            Resultado Run: 7
+
+
+
+
+
+
+
+
+
+
+

@@ -221,12 +221,35 @@ namespace Winforms
             //}
 
 
-            var nombresEnumerable = GenerarNombres();
-            await ProcesarNombres(nombresEnumerable);
-            
-            Console.WriteLine("fin");
+            //var nombresEnumerable = GenerarNombres();
+            //await ProcesarNombres(nombresEnumerable);
 
-            cancellationTokenSource = null;
+            //Console.WriteLine("fin");
+
+            //cancellationTokenSource = null;
+
+
+            //Sincrono dentro de Asincrono
+            //var valor = ObtenerValor().Result;
+            //Console.WriteLine(valor
+
+
+            //Evitar uso de Task.Factory.StartNew
+
+            var resultadoStartNew = await Task.Factory.StartNew(async () => {
+                await Task.Delay(1000);
+                return 7;
+            }).Unwrap();
+
+            var resultadoRun = await Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                return 7;
+            });
+
+            Console.WriteLine($"Resultado StartNew: {resultadoStartNew}");
+            Console.WriteLine($"----");
+            Console.WriteLine($"Resultado Run: {resultadoRun}");
 
             return;
 
@@ -260,6 +283,12 @@ namespace Winforms
             pgProcesamiento.Visible = false;
             pgProcesamiento.Value = 0;
             // ...
+        }
+
+        private async Task<string> ObtenerValor()
+        {
+            await Task.Delay(1000);
+            return "Edison";
         }
 
 
