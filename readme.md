@@ -1610,6 +1610,66 @@ ej:
     corregir 150 examenes
     tu soo: 4 * 150 = 600 min
     en grupo: 45 + 4 * 50 = 245 min
-    
 
+
+--- PARALEL INVOKE
+EJECUTAR FUNCIONES DISTINTAS EN PARALELO
+
+            // PARALEL.INVOKE
+            // Preparando código de voltear imágenes
+            var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
+            var carpetaOrigen = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
+            var carpetaDestinoSecuencial = Path.Combine(directorioActual, @"Imagenes\foreach-secuencial");
+            var carpetaDestinoParalelo = Path.Combine(directorioActual, @"Imagenes\foreach-paralelo");
+            PrepararEjecucion(carpetaDestinoSecuencial, carpetaDestinoParalelo);
+            var archivos = Directory.EnumerateFiles(carpetaOrigen);
+
+            // Preparando código de matrices
+            int columnasMatrizA = 208;
+            int filas = 1240;
+            int columnasMatrizB = 750;
+            var matrizA = Matrices.InicializarMatriz(filas, columnasMatrizA);
+            var matrizB = Matrices.InicializarMatriz(columnasMatrizA, columnasMatrizB);
+            var resultado = new double[filas, columnasMatrizB];
+
+            Action multiplicarMatrices = () => Matrices.MultiplicarMatricesSecuencial(matrizA, matrizB, resultado);
+            Action voltearImagenes = () =>
+            {
+                foreach (var archivo in archivos)
+                {
+                    VoltearImagen(archivo, carpetaDestinoSecuencial);
+                }
+            };
+
+            Action[] acciones = new Action[] { multiplicarMatrices, voltearImagenes };
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // TODO: Algoritmo secuencial
+            foreach (var accion in acciones)
+            {
+                accion();
+            }
+
+            var tiempoSecuencial = stopwatch.ElapsedMilliseconds / 1000.0;
+
+            Console.WriteLine("Secuencial - duración en segundos: {0}",
+                    tiempoSecuencial);
+
+            PrepararEjecucion(carpetaDestinoSecuencial, carpetaDestinoParalelo);
+
+            stopwatch.Restart();
+
+            // TODO: Algoritmo paralelo
+            Parallel.Invoke(acciones);
+
+            var tiempoEnParalelo = stopwatch.ElapsedMilliseconds / 1000.0;
+
+            Console.WriteLine("Paralelo - duración en segundos: {0}",
+                   tiempoEnParalelo);
+
+            EscribirComparacion(tiempoSecuencial, tiempoEnParalelo);
+
+            Console.WriteLine("fin");
 

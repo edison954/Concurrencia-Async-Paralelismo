@@ -333,37 +333,97 @@ namespace Winforms
 
             //PARALLEL.Foreach
 
+            //var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
+            //var carpetaOrigen = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
+            //var carpetaDestinoSecuencial = Path.Combine(directorioActual, @"Imagenes\foreach-secuencial");
+            //var carpetaDestinoParalelo = Path.Combine(directorioActual, @"Imagenes\foreach-paralelo");
+            //PrepararEjecucion(carpetaDestinoSecuencial, carpetaDestinoParalelo);
+
+            //var archivos = Directory.EnumerateFiles(carpetaOrigen);
+
+
+            //var stopwathc = new Stopwatch();
+
+            //stopwathc.Start();
+            ////Secuencial
+            //foreach (var archivo in archivos)
+            //{
+            //    VoltearImagen(archivo, carpetaDestinoSecuencial);
+            //}
+
+            //var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
+            //Console.WriteLine("Secuencial - duración en segundos: {0}", tiempoSecuencial);
+
+            //stopwathc.Restart();
+            ////Paralelo
+            //Parallel.ForEach(archivos, archivo => {
+            //    VoltearImagen(archivo, carpetaDestinoParalelo);
+            //});
+            //var tiempoParalelo = stopwathc.ElapsedMilliseconds / 1000.0;
+            //Console.WriteLine("Paralelo - duración en segundos: {0}", tiempoParalelo);
+
+            //EscribirComparacion(tiempoSecuencial, tiempoParalelo);
+            //Console.WriteLine("fin");
+
+            // PARALEL.INVOKE
+            // Preparando código de voltear imágenes
             var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
             var carpetaOrigen = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
             var carpetaDestinoSecuencial = Path.Combine(directorioActual, @"Imagenes\foreach-secuencial");
             var carpetaDestinoParalelo = Path.Combine(directorioActual, @"Imagenes\foreach-paralelo");
             PrepararEjecucion(carpetaDestinoSecuencial, carpetaDestinoParalelo);
-
             var archivos = Directory.EnumerateFiles(carpetaOrigen);
 
+            // Preparando código de matrices
+            int columnasMatrizA = 208;
+            int filas = 1240;
+            int columnasMatrizB = 750;
+            var matrizA = Matrices.InicializarMatriz(filas, columnasMatrizA);
+            var matrizB = Matrices.InicializarMatriz(columnasMatrizA, columnasMatrizB);
+            var resultado = new double[filas, columnasMatrizB];
 
-            var stopwathc = new Stopwatch();
-
-            stopwathc.Start();
-            //Secuencial
-            foreach (var archivo in archivos)
+            Action multiplicarMatrices = () => Matrices.MultiplicarMatricesSecuencial(matrizA, matrizB, resultado);
+            Action voltearImagenes = () =>
             {
-                VoltearImagen(archivo, carpetaDestinoSecuencial);
+                foreach (var archivo in archivos)
+                {
+                    VoltearImagen(archivo, carpetaDestinoSecuencial);
+                }
+            };
+
+            Action[] acciones = new Action[] { multiplicarMatrices, voltearImagenes };
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // TODO: Algoritmo secuencial
+            foreach (var accion in acciones)
+            {
+                accion();
             }
 
-            var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
-            Console.WriteLine("Secuencial - duración en segundos: {0}", tiempoSecuencial);
+            var tiempoSecuencial = stopwatch.ElapsedMilliseconds / 1000.0;
 
-            stopwathc.Restart();
-            //Paralelo
-            Parallel.ForEach(archivos, archivo => {
-                VoltearImagen(archivo, carpetaDestinoParalelo);
-            });
-            var tiempoParalelo = stopwathc.ElapsedMilliseconds / 1000.0;
-            Console.WriteLine("Paralelo - duración en segundos: {0}", tiempoParalelo);
+            Console.WriteLine("Secuencial - duración en segundos: {0}",
+                    tiempoSecuencial);
 
-            EscribirComparacion(tiempoSecuencial, tiempoParalelo);
+            PrepararEjecucion(carpetaDestinoSecuencial, carpetaDestinoParalelo);
+
+            stopwatch.Restart();
+
+            // TODO: Algoritmo paralelo
+            Parallel.Invoke(acciones);
+
+            var tiempoEnParalelo = stopwatch.ElapsedMilliseconds / 1000.0;
+
+            Console.WriteLine("Paralelo - duración en segundos: {0}",
+                   tiempoEnParalelo);
+
+            EscribirComparacion(tiempoSecuencial, tiempoEnParalelo);
+
             Console.WriteLine("fin");
+
+
 
 
             return;
@@ -376,7 +436,7 @@ namespace Winforms
             pgProcesamiento.Visible = true;
             var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
 
-            var stopwatch = new Stopwatch();
+            //var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             try
