@@ -290,16 +290,45 @@ namespace Winforms
 
             //PARALELISMO  Parallel.For
 
-            Console.WriteLine("Secuencial ");
-            for (int i = 0; i < 11; i++)
-            {
-                Console.WriteLine(i);
-            }
+            //Console.WriteLine("Secuencial ");
+            //for (int i = 0; i < 11; i++)
+            //{
+            //    Console.WriteLine(i);
+            //}
 
-            Console.WriteLine("Paralelo ");
-            Parallel.For(0, 11, i => Console.WriteLine(i));
+            //Console.WriteLine("Paralelo ");
+            //Parallel.For(0, 11, i => Console.WriteLine(i));
 
 
+            //PARALELISMO  Velocidad multiplicacion de matrices Parallel.For
+            var columnasMatrizA = 1100;
+            var filas = 1000;
+
+            var columnasMatrizB = 1750;
+
+            var matrizA = Matrices.InicializarMatriz(filas, columnasMatrizA);
+            var matrizB = Matrices.InicializarMatriz(columnasMatrizA, columnasMatrizB);
+            var resultado = new double[filas, columnasMatrizB];
+
+            var stopwathc = new Stopwatch();
+
+            stopwathc.Start();
+            await Task.Run(() => Matrices.MultiplicarMatricesSecuencial(matrizA, matrizB, resultado));
+            var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
+
+            Console.WriteLine("Secuencial - duración en segundos: {0}", tiempoSecuencial);
+
+            resultado = new double[filas, columnasMatrizB];
+
+            stopwathc.Restart();
+            await Task.Run(() => Matrices.MultiplicarMatricesParalelo(matrizA, matrizB, resultado));
+            var tiempoParalelo = stopwathc.ElapsedMilliseconds / 1000.0;
+
+            Console.WriteLine("Paralelo - duración en segundos: {0}", tiempoParalelo);
+
+            EscribirComparacion(tiempoSecuencial, tiempoParalelo);
+
+            Console.WriteLine("fin");
 
             return;
 
