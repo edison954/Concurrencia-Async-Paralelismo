@@ -1547,5 +1547,69 @@ Si es I/O, consideramos usar Task.WhenAll (ej: descarga de imagenes de internet)
 Si es CPU, concideramos usar la clase Parallel.For  (ej: multiplicacion de matrices)
 
 
+-- Parallel.Foreach
+
+            var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
+            var carpetaOrigen = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
+            var carpetaDestinoSecuencial = Path.Combine(directorioActual, @"Imagenes\foreach-secuencial");
+            var carpetaDestinoParalelo = Path.Combine(directorioActual, @"Imagenes\foreach-paralelo");
+            PrepararEjecucion(carpetaDestinoSecuencial, carpetaDestinoParalelo);
+
+            var archivos = Directory.EnumerateFiles(carpetaOrigen);
+
+
+            var stopwathc = new Stopwatch();
+
+            stopwathc.Start();
+            //Secuencial
+            foreach (var archivo in archivos)
+            {
+                VoltearImagen(archivo, carpetaDestinoSecuencial);
+            }
+
+            var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
+            Console.WriteLine("Secuencial - duración en segundos: {0}", tiempoSecuencial);
+
+            stopwathc.Restart();
+            //Paralelo
+            Parallel.ForEach(archivos, archivo => {
+                VoltearImagen(archivo, carpetaDestinoParalelo);
+            });
+            var tiempoParalelo = stopwathc.ElapsedMilliseconds / 1000.0;
+            Console.WriteLine("Paralelo - duración en segundos: {0}", tiempoParalelo);
+
+            EscribirComparacion(tiempoSecuencial, tiempoParalelo);
+            Console.WriteLine("fin");
+
+
+-- 
+        private void VoltearImagen(string archivo, string carpetaDestino)
+        {
+            using (var image = new Bitmap(archivo))
+            {
+                image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                var nombreArchivo = Path.GetFileName(archivo);
+                var destino = Path.Combine(carpetaDestino, nombreArchivo);
+                image.Save(destino);
+            }
+        }
+
+incremento de velocidad es lo mas importante para usar paralelismo
+sin embargo nada es gratis. 
+el paralelismo tiene su costo al preparal los hilos por ello es necesario hacer mediciones
+vale la pena?
+ej:
+
+    corregir un examen = 4 mins
+    encontrar 2 ayudantes = 45 mins
+
+    corregir 1 examen
+    tu solo 4*1 = 4 minutos
+    en grupo: 45 + 4 = 49 minutos
+
+    corregir 150 examenes
+    tu soo: 4 * 150 = 600 min
+    en grupo: 45 + 4 * 50 = 245 min
+    
 
 

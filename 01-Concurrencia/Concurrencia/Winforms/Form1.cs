@@ -301,34 +301,70 @@ namespace Winforms
 
 
             //PARALELISMO  Velocidad multiplicacion de matrices Parallel.For
-            var columnasMatrizA = 1100;
-            var filas = 1000;
+            //var columnasMatrizA = 1100;
+            //var filas = 1000;
 
-            var columnasMatrizB = 1750;
+            //var columnasMatrizB = 1750;
 
-            var matrizA = Matrices.InicializarMatriz(filas, columnasMatrizA);
-            var matrizB = Matrices.InicializarMatriz(columnasMatrizA, columnasMatrizB);
-            var resultado = new double[filas, columnasMatrizB];
+            //var matrizA = Matrices.InicializarMatriz(filas, columnasMatrizA);
+            //var matrizB = Matrices.InicializarMatriz(columnasMatrizA, columnasMatrizB);
+            //var resultado = new double[filas, columnasMatrizB];
+
+            //var stopwathc = new Stopwatch();
+
+            //stopwathc.Start();
+            //await Task.Run(() => Matrices.MultiplicarMatricesSecuencial(matrizA, matrizB, resultado));
+            //var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
+
+            //Console.WriteLine("Secuencial - duración en segundos: {0}", tiempoSecuencial);
+
+            //resultado = new double[filas, columnasMatrizB];
+
+            //stopwathc.Restart();
+            //await Task.Run(() => Matrices.MultiplicarMatricesParalelo(matrizA, matrizB, resultado));
+            //var tiempoParalelo = stopwathc.ElapsedMilliseconds / 1000.0;
+
+            //Console.WriteLine("Paralelo - duración en segundos: {0}", tiempoParalelo);
+
+            //EscribirComparacion(tiempoSecuencial, tiempoParalelo);
+
+            //Console.WriteLine("fin");
+
+
+            //PARALLEL.Foreach
+
+            var directorioActual = AppDomain.CurrentDomain.BaseDirectory;
+            var carpetaOrigen = Path.Combine(directorioActual, @"Imagenes\resultado-secuencial");
+            var carpetaDestinoSecuencial = Path.Combine(directorioActual, @"Imagenes\foreach-secuencial");
+            var carpetaDestinoParalelo = Path.Combine(directorioActual, @"Imagenes\foreach-paralelo");
+            PrepararEjecucion(carpetaDestinoSecuencial, carpetaDestinoParalelo);
+
+            var archivos = Directory.EnumerateFiles(carpetaOrigen);
+
 
             var stopwathc = new Stopwatch();
 
             stopwathc.Start();
-            await Task.Run(() => Matrices.MultiplicarMatricesSecuencial(matrizA, matrizB, resultado));
-            var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
+            //Secuencial
+            foreach (var archivo in archivos)
+            {
+                VoltearImagen(archivo, carpetaDestinoSecuencial);
+            }
 
+            var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
             Console.WriteLine("Secuencial - duración en segundos: {0}", tiempoSecuencial);
 
-            resultado = new double[filas, columnasMatrizB];
-
             stopwathc.Restart();
-            await Task.Run(() => Matrices.MultiplicarMatricesParalelo(matrizA, matrizB, resultado));
+            //Paralelo
+            Parallel.ForEach(archivos, archivo => {
+                VoltearImagen(archivo, carpetaDestinoParalelo);
+            });
             var tiempoParalelo = stopwathc.ElapsedMilliseconds / 1000.0;
-
             Console.WriteLine("Paralelo - duración en segundos: {0}", tiempoParalelo);
 
             EscribirComparacion(tiempoSecuencial, tiempoParalelo);
-
             Console.WriteLine("fin");
+
 
             return;
 
@@ -363,6 +399,20 @@ namespace Winforms
             pgProcesamiento.Value = 0;
             // ...
         }
+
+
+
+        private void VoltearImagen(string archivo, string carpetaDestino)
+        {
+            using (var image = new Bitmap(archivo))
+            {
+                image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                var nombreArchivo = Path.GetFileName(archivo);
+                var destino = Path.Combine(carpetaDestino, nombreArchivo);
+                image.Save(destino);
+            }
+        }
+
 
 
         public static void EscribirComparacion(double tiempo1, double tiempo2)
