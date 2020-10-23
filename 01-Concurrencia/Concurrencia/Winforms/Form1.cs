@@ -424,49 +424,56 @@ namespace Winforms
             //Console.WriteLine("fin");
 
             /// TOKEN PARA CANCELAR 
-            var columnasMatrizA = 1100;
-            var filas = 1000;
+            //var columnasMatrizA = 1100;
+            //var filas = 1000;
 
-            var columnasMatrizB = 1750;
+            //var columnasMatrizB = 1750;
 
-            var matrizA = Matrices.InicializarMatriz(filas, columnasMatrizA);
-            var matrizB = Matrices.InicializarMatriz(columnasMatrizA, columnasMatrizB);
-            var resultado = new double[filas, columnasMatrizB];
+            //var matrizA = Matrices.InicializarMatriz(filas, columnasMatrizA);
+            //var matrizB = Matrices.InicializarMatriz(columnasMatrizA, columnasMatrizB);
+            //var resultado = new double[filas, columnasMatrizB];
 
-            var stopwathc = new Stopwatch();
+            //var stopwathc = new Stopwatch();
 
-            stopwathc.Start();
-            await Task.Run(() => Matrices.MultiplicarMatricesSecuencial(matrizA, matrizB, resultado));
-            var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
+            //stopwathc.Start();
+            //await Task.Run(() => Matrices.MultiplicarMatricesSecuencial(matrizA, matrizB, resultado));
+            //var tiempoSecuencial = stopwathc.ElapsedMilliseconds / 1000.0;
 
-            Console.WriteLine("Secuencial - duración en segundos: {0}", tiempoSecuencial);
+            //Console.WriteLine("Secuencial - duración en segundos: {0}", tiempoSecuencial);
 
-            resultado = new double[filas, columnasMatrizB];
+            //resultado = new double[filas, columnasMatrizB];
 
-            stopwathc.Restart();
+            //stopwathc.Restart();
 
+            //cancellationTokenSource = new CancellationTokenSource();
+            //try
+            //{
+            //    await Task.Run(() => Matrices.MultiplicarMatricesParalelo(matrizA, matrizB, resultado, cancellationTokenSource.Token));
+            //}
+            //catch (Exception)
+            //{
+            //    Console.WriteLine("Operacion cancelada");
+            //}
+            //finally
+            //{
+            //    cancellationTokenSource.Dispose();
+            //}
+            //cancellationTokenSource = null;
+
+            //var tiempoParalelo = stopwathc.ElapsedMilliseconds / 1000.0;
+
+            //Console.WriteLine("Paralelo - duración en segundos: {0}", tiempoParalelo);
+
+            //EscribirComparacion(tiempoSecuencial, tiempoParalelo);
+
+            //Console.WriteLine("fin");
+
+            // MAXIMO GRADO DE PARALELISMO
             cancellationTokenSource = new CancellationTokenSource();
-            try
+            for (int i = 1; i < 13; i++)
             {
-                await Task.Run(() => Matrices.MultiplicarMatricesParalelo(matrizA, matrizB, resultado, cancellationTokenSource.Token));
+                await RealizarPruebaMatrices(i);
             }
-            catch (Exception)
-            {
-                Console.WriteLine("Operacion cancelada");
-            }
-            finally
-            {
-                cancellationTokenSource.Dispose();
-            }
-            cancellationTokenSource = null;
-
-            var tiempoParalelo = stopwathc.ElapsedMilliseconds / 1000.0;
-
-            Console.WriteLine("Paralelo - duración en segundos: {0}", tiempoParalelo);
-
-            EscribirComparacion(tiempoSecuencial, tiempoParalelo);
-
-            Console.WriteLine("fin");
 
 
             return;
@@ -501,6 +508,39 @@ namespace Winforms
             pgProcesamiento.Visible = false;
             pgProcesamiento.Value = 0;
             // ...
+        }
+
+
+        private async Task RealizarPruebaMatrices(int maximoGradoParalelismo)
+        {
+            int colCount = 2508;
+            int rowCount = 1300;
+            int colCount2 = 1850;
+            double[,] m1 = Matrices.InicializarMatriz(rowCount, colCount);
+            double[,] m2 = Matrices.InicializarMatriz(colCount, colCount2);
+            double[,] result = new double[rowCount, colCount2];
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            try
+            {
+                await Task.Run(() => {
+                    Matrices.MultiplicarMatricesParalelo(m1, m2, result,
+                        cancellationTokenSource.Token, maximoGradoParalelismo);
+                });
+
+                Console.WriteLine($"Maximo grado: {maximoGradoParalelismo}; tiempo: {stopwatch.ElapsedMilliseconds / 1000.0}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Operación Cancelada");
+            }
+            finally
+            {
+                cancellationTokenSource.Dispose();
+            }
+
         }
 
 

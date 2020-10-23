@@ -1673,3 +1673,59 @@ EJECUTAR FUNCIONES DISTINTAS EN PARALELO
 
             Console.WriteLine("fin");
 
+
+--TOKEN DE CANCELACION
+token de cancelacion de tareas en paralelo
+
+
+            cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                await Task.Run(() => Matrices.MultiplicarMatricesParalelo(matrizA, matrizB, resultado, cancellationTokenSource.Token));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Operacion cancelada");
+            }
+            finally
+            {
+                cancellationTokenSource.Dispose();
+            }
+            cancellationTokenSource = null;
+
+
+--- MAXIMO GRADO DE PARALELISMO
+
+por defecto con parallel utilizamos todos los recursos disponibles del procesador.
+
+        private async Task RealizarPruebaMatrices(int maximoGradoParalelismo)
+        {
+            int colCount = 2508;
+            int rowCount = 1300;
+            int colCount2 = 1850;
+            double[,] m1 = Matrices.InicializarMatriz(rowCount, colCount);
+            double[,] m2 = Matrices.InicializarMatriz(colCount, colCount2);
+            double[,] result = new double[rowCount, colCount2];
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            try
+            {
+                await Task.Run(() => {
+                    Matrices.MultiplicarMatricesParalelo(m1, m2, result,
+                        cancellationTokenSource.Token, maximoGradoParalelismo);
+                });
+
+                Console.WriteLine($"Maximo grado: {maximoGradoParalelismo}; tiempo: {stopwatch.ElapsedMilliseconds / 1000.0}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Operación Cancelada");
+            }
+            finally
+            {
+                cancellationTokenSource.Dispose();
+            }
+
+        }
