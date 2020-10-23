@@ -1540,5 +1540,12 @@ ej: multiplicacion de matrices
         }
 
 
+---- Task.WhenAll vs Parallel.For
+CPU vs I/O
+
+Si es I/O, consideramos usar Task.WhenAll (ej: descarga de imagenes de internet)
+Si es CPU, concideramos usar la clase Parallel.For  (ej: multiplicacion de matrices)
+
+
 
 
