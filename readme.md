@@ -1729,3 +1729,43 @@ por defecto con parallel utilizamos todos los recursos disponibles del procesado
             }
 
         }
+
+
+---------METODOS ATOMICOS
+garantizan el determinismo,        
+1. si un hilo esta ejecutando dicho metodo, entonces otro hilo no puede ver un estado intermedio
+2. la operacion va a finalizar exitosamente o va a fallar completamente sin realizar modificaciones
+
+como conseguir atomicidad?
+- la mas comun es utilizar locks
+
+Seguridad en hilos (tread-safe)
+un metodo es seguro en hilos cuando podemos ejecutarlo de manera simultanea desde multiples hilos sin causar ningun tipo de error
+
+como conseguir seguridad en hilos?
+- usando locks
+- utilizando objetos inmutables
+- funciones puras (retornan el mismo valor para los mismos argumentos)
+
+
+Condicion de carrera (Race Condition)
+
+se da cuando tenemos una variable compartida por varios hilos, dichos hilos quieren modificar la variable de manera simultanea 
+un incremento simple de una variable NO es una operacion atomica (lectura, incremento y escritura)
+
+
+opciones para evitarlo:
+
+Interlocked:
+
+
+            var valorSinInterlocked = 0;
+            Parallel.For(0, 1000000, numero => valorSinInterlocked++);
+
+            Console.WriteLine($"Sumatoria sin interlocked: {valorSinInterlocked}");
+
+            var valorConInterlocked = 0;
+            Parallel.For(0, 1000000, numero => Interlocked.Increment(ref valorConInterlocked));
+
+            Console.WriteLine($"Sumatoria sin interlocked: {valorConInterlocked}");
+

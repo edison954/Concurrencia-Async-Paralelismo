@@ -469,11 +469,25 @@ namespace Winforms
             //Console.WriteLine("fin");
 
             // MAXIMO GRADO DE PARALELISMO
-            cancellationTokenSource = new CancellationTokenSource();
-            for (int i = 1; i < 13; i++)
-            {
-                await RealizarPruebaMatrices(i);
-            }
+            //cancellationTokenSource = new CancellationTokenSource();
+            //for (int i = 1; i < 13; i++)
+            //{
+            //    await RealizarPruebaMatrices(i);
+            //}
+
+            //Race conditions
+            //Interlock
+
+            var valorSinInterlocked = 0;
+            Parallel.For(0, 1000000, numero => valorSinInterlocked++);
+
+            Console.WriteLine($"Sumatoria sin interlocked: {valorSinInterlocked}");
+
+            var valorConInterlocked = 0;
+            Parallel.For(0, 1000000, numero => Interlocked.Increment(ref valorConInterlocked));
+
+            Console.WriteLine($"Sumatoria sin interlocked: {valorConInterlocked}");
+
 
 
             return;
