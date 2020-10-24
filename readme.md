@@ -1807,3 +1807,29 @@ Locks
                     valorSumado += valorIncrementado;
                 }
             });
+
+
+ThreadStatic
+    se usa este atributo para indicar que un campo estatico es unico para cada hilo
+    cada hilo va a tener versiones diferentes de este campo. 
+
+
+Parallel LINQ (PLINQ)
+
+PLINQ es lo mismo que Linq con funcionalidad en paralelo
+
+            cancellationTokenSource = new CancellationTokenSource();
+
+            var fuente = Enumerable.Range(1, 20);
+
+            var elementosPAres = fuente
+                .AsParallel()
+                .WithDegreeOfParallelism(2)
+                .WithCancellation(cancellationTokenSource.Token)
+                .AsOrdered()
+                .Where(x => x % 2 == 0).ToList();
+
+            foreach (var numero in elementosPAres)
+            {
+                Console.WriteLine(numero);
+            }

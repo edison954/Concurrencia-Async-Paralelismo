@@ -490,24 +490,44 @@ namespace Winforms
 
 
             // Locks
-            var valorIncrementado = 0;
-            var valorSumado = 0;
+            //var valorIncrementado = 0;
+            //var valorSumado = 0;
 
-            var mutex = new object();
+            //var mutex = new object();
 
-            Parallel.For(0, 10000, numero => {
-                //Interlocked.Increment(ref valorIncrementado);
-                //Interlocked.Add(ref valorSumado, valorIncrementado);
-                lock (mutex)
-                {
-                    valorIncrementado++;
-                    valorSumado += valorIncrementado;
-                }
-            });
+            //Parallel.For(0, 10000, numero => {
+            //    //Interlocked.Increment(ref valorIncrementado);
+            //    //Interlocked.Add(ref valorSumado, valorIncrementado);
+            //    lock (mutex)
+            //    {
+            //        valorIncrementado++;
+            //        valorSumado += valorIncrementado;
+            //    }
+            //});
 
-            Console.WriteLine("---");
-            Console.WriteLine($"Valor incrementado: {valorIncrementado}");
-            Console.WriteLine($"Valor sumado: {valorSumado}");
+            //Console.WriteLine("---");
+            //Console.WriteLine($"Valor incrementado: {valorIncrementado}");
+            //Console.WriteLine($"Valor sumado: {valorSumado}");
+
+
+            // PLINQ
+
+            cancellationTokenSource = new CancellationTokenSource();
+
+            var fuente = Enumerable.Range(1, 20);
+
+            var elementosPAres = fuente
+                .AsParallel()
+                .WithDegreeOfParallelism(2)
+                .WithCancellation(cancellationTokenSource.Token)
+                .AsOrdered()
+                .Where(x => x % 2 == 0).ToList();
+
+            foreach (var numero in elementosPAres)
+            {
+                Console.WriteLine(numero);
+            }
+
 
 
             return;
