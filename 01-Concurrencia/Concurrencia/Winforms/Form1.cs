@@ -512,21 +512,33 @@ namespace Winforms
 
             // PLINQ
 
-            cancellationTokenSource = new CancellationTokenSource();
+            //cancellationTokenSource = new CancellationTokenSource();
 
-            var fuente = Enumerable.Range(1, 20);
+            //var fuente = Enumerable.Range(1, 20);
 
-            var elementosPAres = fuente
-                .AsParallel()
-                .WithDegreeOfParallelism(2)
-                .WithCancellation(cancellationTokenSource.Token)
-                .AsOrdered()
-                .Where(x => x % 2 == 0).ToList();
+            //var elementosPAres = fuente
+            //    .AsParallel()
+            //    .WithDegreeOfParallelism(2)
+            //    .WithCancellation(cancellationTokenSource.Token)
+            //    .AsOrdered()
+            //    .Where(x => x % 2 == 0).ToList();
 
-            foreach (var numero in elementosPAres)
-            {
-                Console.WriteLine(numero);
-            }
+            //foreach (var numero in elementosPAres)
+            //{
+            //    Console.WriteLine(numero);
+            //}
+
+            // PLINQ Operaciones de agregado
+            
+            var fuente = Enumerable.Range(1, 1000);
+
+            var suma = fuente.AsParallel().Sum();
+
+            var promedio = fuente.AsParallel().Average();
+
+            Console.WriteLine($"La suma es: {suma}" );
+            Console.WriteLine($"El promedio es: {promedio}");
+
 
 
 

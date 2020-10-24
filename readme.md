@@ -1833,3 +1833,6 @@ PLINQ es lo mismo que Linq con funcionalidad en paralelo
             {
                 Console.WriteLine(numero);
             }
+
+Operaciones de agregado (sumar, promedio)            
+
