@@ -478,16 +478,36 @@ namespace Winforms
             //Race conditions
             //Interlock
 
-            var valorSinInterlocked = 0;
-            Parallel.For(0, 1000000, numero => valorSinInterlocked++);
+            //var valorSinInterlocked = 0;
+            //Parallel.For(0, 1000000, numero => valorSinInterlocked++);
 
-            Console.WriteLine($"Sumatoria sin interlocked: {valorSinInterlocked}");
+            //Console.WriteLine($"Sumatoria sin interlocked: {valorSinInterlocked}");
 
-            var valorConInterlocked = 0;
-            Parallel.For(0, 1000000, numero => Interlocked.Increment(ref valorConInterlocked));
+            //var valorConInterlocked = 0;
+            //Parallel.For(0, 1000000, numero => Interlocked.Increment(ref valorConInterlocked));
 
-            Console.WriteLine($"Sumatoria sin interlocked: {valorConInterlocked}");
+            //Console.WriteLine($"Sumatoria sin interlocked: {valorConInterlocked}");
 
+
+            // Locks
+            var valorIncrementado = 0;
+            var valorSumado = 0;
+
+            var mutex = new object();
+
+            Parallel.For(0, 10000, numero => {
+                //Interlocked.Increment(ref valorIncrementado);
+                //Interlocked.Add(ref valorSumado, valorIncrementado);
+                lock (mutex)
+                {
+                    valorIncrementado++;
+                    valorSumado += valorIncrementado;
+                }
+            });
+
+            Console.WriteLine("---");
+            Console.WriteLine($"Valor incrementado: {valorIncrementado}");
+            Console.WriteLine($"Valor sumado: {valorSumado}");
 
 
             return;

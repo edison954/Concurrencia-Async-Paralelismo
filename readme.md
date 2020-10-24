@@ -1769,3 +1769,41 @@ Interlocked:
 
             Console.WriteLine($"Sumatoria sin interlocked: {valorConInterlocked}");
 
+Locks
+    - podemos tener un bloque de codigo el cual solamente se va a ejecutar por un hilo a la vez
+    - se usa cuando necesitamos realizar varias operaciones, o una operacion no cubierta por interloked
+    - lo que hagamos en un lock debe ser rapido
+
+
+    ej: condicion de carrera
+            var valorIncrementado = 0;
+            var valorSumado = 0;
+
+            Parallel.For(0, 10000, numero => {
+                Interlocked.Increment(ref valorIncrementado);
+                            //aqui se da la race condition porque el valor de valorIncrementado puede ser cambiado por x hilos
+                Interlocked.Add(ref valorSumado, valorIncrementado);
+            });
+
+            Console.WriteLine("---");
+            Console.WriteLine($"Valor incrementado: {valorIncrementado}");
+            Console.WriteLine($"Valor sumado: {valorSumado}");
+
+
+    ej: solucion con lock
+
+
+            var valorIncrementado = 0;
+            var valorSumado = 0;
+
+            var mutex = new object();
+
+            Parallel.For(0, 10000, numero => {
+                //Interlocked.Increment(ref valorIncrementado);
+                //Interlocked.Add(ref valorSumado, valorIncrementado);
+                lock (mutex)
+                {
+                    valorIncrementado++;
+                    valorSumado += valorIncrementado;
+                }
+            });
