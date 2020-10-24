@@ -1888,3 +1888,13 @@ procesar elementos en la medida de que vayan estando disponibles
             //}
 
             queryParalelo.ForAll(matriz => Console.WriteLine(matriz[0, 0]));
+
+
+Concurrencia (Antipatrones de paralelismo)
+
+- paralelismo innecesario
+- condiciones de carrera
+- sobre saturacion
+- seguridad en hilos
+- bloqueo mutuo
+
