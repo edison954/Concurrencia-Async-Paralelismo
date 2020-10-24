@@ -1872,4 +1872,19 @@ Operaciones de agregado (sumar, promedio)
 
             EscribirComparacion(tiempoSecuencial, tiempoEnParalelo);
 
-            
+
+PLINQ.ForAll
+procesar elementos en la medida de que vayan estando disponibles
+
+            //Parallel.ForAll
+
+            var queryParalelo = Enumerable.Range(1, 10).AsParallel()
+                .WithDegreeOfParallelism(2).Select(x => Matrices.InicializarMatriz(100, 100));
+
+            // Procesa todo junto
+            //foreach (var matriz in queryParalelo)
+            //{
+            //    Console.WriteLine(matriz[0, 0]);
+            //}
+
+            queryParalelo.ForAll(matriz => Console.WriteLine(matriz[0, 0]));

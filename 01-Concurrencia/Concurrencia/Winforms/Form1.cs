@@ -540,29 +540,43 @@ namespace Winforms
             //Console.WriteLine($"El promedio es: {promedio}");
 
 
-            var matrices = Enumerable.Range(1, 500).Select(x => Matrices.InicializarMatriz(1000, 1000)).ToList();
-            Console.WriteLine("matrices generadas");
+            //var matrices = Enumerable.Range(1, 500).Select(x => Matrices.InicializarMatriz(1000, 1000)).ToList();
+            //Console.WriteLine("matrices generadas");
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            //var stopwatch = new Stopwatch();
+            //stopwatch.Start();
 
-            var sumaMatricesSecuencial = matrices.Aggregate(Matrices.SumarMatricesSecuencial);
+            //var sumaMatricesSecuencial = matrices.Aggregate(Matrices.SumarMatricesSecuencial);
 
-            var tiempoSecuencial = stopwatch.ElapsedMilliseconds / 1000.0;
+            //var tiempoSecuencial = stopwatch.ElapsedMilliseconds / 1000.0;
 
-            Console.WriteLine("Secuencial - duración en segundos: {0}",
-                    tiempoSecuencial);
+            //Console.WriteLine("Secuencial - duración en segundos: {0}",
+            //        tiempoSecuencial);
 
-            stopwatch.Restart();
+            //stopwatch.Restart();
 
-            var sumaMatricesParalelo = matrices.AsParallel().Aggregate(Matrices.SumarMatricesSecuencial);
+            //var sumaMatricesParalelo = matrices.AsParallel().Aggregate(Matrices.SumarMatricesSecuencial);
 
-            var tiempoEnParalelo = stopwatch.ElapsedMilliseconds / 1000.0;
+            //var tiempoEnParalelo = stopwatch.ElapsedMilliseconds / 1000.0;
 
-            Console.WriteLine("Paralelo - duración en segundos: {0}",
-                   tiempoEnParalelo);
+            //Console.WriteLine("Paralelo - duración en segundos: {0}",
+            //       tiempoEnParalelo);
 
-            EscribirComparacion(tiempoSecuencial, tiempoEnParalelo);
+            //EscribirComparacion(tiempoSecuencial, tiempoEnParalelo);
+
+            //-----------------
+            //Parallel.ForAll
+
+            var queryParalelo = Enumerable.Range(1, 10).AsParallel()
+                .WithDegreeOfParallelism(2).Select(x => Matrices.InicializarMatriz(100, 100));
+
+            // Procesa todo junto
+            //foreach (var matriz in queryParalelo)
+            //{
+            //    Console.WriteLine(matriz[0, 0]);
+            //}
+
+            queryParalelo.ForAll(matriz => Console.WriteLine(matriz[0, 0]));
 
 
 
@@ -576,7 +590,7 @@ namespace Winforms
             pgProcesamiento.Visible = true;
             var reportarProgreso = new Progress<int>(ReportarProgresoTarjetas);
 
-            //var stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             try
